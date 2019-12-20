@@ -106,7 +106,14 @@ public abstract class Enchantment implements Cloneable {
     }
 
     public static Enchantment get(int id) {
-        return id >= 0 && id < enchantments.length ? enchantments[id] : new UnknownEnchantment(id);
+        Enchantment enchantment = null;
+        if (id >= 0 && id < enchantments.length) {
+            enchantment = enchantments[id];
+        }
+        if (enchantment == null) {
+            return new UnknownEnchantment(id);
+        }
+        return enchantment;
     }
 
     public static Enchantment getEnchantment(int id) {
@@ -159,7 +166,7 @@ public abstract class Enchantment implements Cloneable {
         if (level > this.getMaxLevel()) {
             this.level = this.getMaxLevel();
         } else if (level < this.getMinLevel()) {
-            this.level = this.getMaxLevel();
+            this.level = this.getMinLevel();
         } else {
             this.level = level;
         }
@@ -195,7 +202,7 @@ public abstract class Enchantment implements Cloneable {
         return this.getMinEnchantAbility(level) + 5;
     }
 
-    public float getDamageProtection(EntityDamageEvent event) {
+    public float getProtectionFactor(EntityDamageEvent event) {
         return 0;
     }
 

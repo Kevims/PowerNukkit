@@ -24,10 +24,7 @@ import cn.nukkit.utils.Utils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -227,7 +224,7 @@ public class Item implements Cloneable, BlockID, ItemID {
             list[BAKED_POTATO] = ItemPotatoBaked.class; //393
             list[POISONOUS_POTATO] = ItemPotatoPoisonous.class; //394
             //TODO: list[EMPTY_MAP] = ItemEmptyMap.class; //395
-            //TODO: list[GOLDEN_CARROT] = ItemCarrotGolden.class; //396
+            list[GOLDEN_CARROT] = ItemCarrotGolden.class; //396
             list[SKULL] = ItemSkull.class; //397
             list[CARROT_ON_A_STICK] = ItemCarrotOnAStick.class; //398
             list[NETHER_STAR] = ItemNetherStar.class; //399
@@ -291,6 +288,8 @@ public class Item implements Cloneable, BlockID, ItemID {
             
             list[TURTLE_SHELL] = ItemTurtleShell.class; //469
 
+            list[SWEET_BERRIES] = ItemSweetBerries.class; //477
+
             list[RECORD_11] = ItemRecord11.class;
             list[RECORD_CAT] = ItemRecordCat.class;
             list[RECORD_13] = ItemRecord13.class;
@@ -303,6 +302,8 @@ public class Item implements Cloneable, BlockID, ItemID {
             list[RECORD_STAL] = ItemRecordStal.class;
             list[RECORD_STRAD] = ItemRecordStrad.class;
             list[RECORD_WAIT] = ItemRecordWait.class;
+
+            list[SHIELD] = ItemShield.class; //513
 
             for (int i = 0; i < 256; ++i) {
                 if (Block.list[i] != null) {
@@ -321,20 +322,13 @@ public class Item implements Cloneable, BlockID, ItemID {
 
     private static final ArrayList<Item> creative = new ArrayList<>();
 
+    @SuppressWarnings("unchecked")
     private static void initCreativeItems() {
         clearCreativeItems();
-        Server server = Server.getInstance();
 
-        String path = server.getDataPath() + "creativeitems.json";
-        if (!new File(path).exists()) {
-            try {
-                Utils.writeFile(path, Server.class.getClassLoader().getResourceAsStream("creativeitems.json"));
-            } catch (IOException e) {
-                MainLogger.getLogger().logException(e);
-                return;
-            }
-        }
-        List<Map> list = new Config(path, Config.YAML).getMapList("items");
+        Config config = new Config(Config.YAML);
+        config.load(Server.class.getClassLoader().getResourceAsStream("creativeitems.json"));
+        List<Map> list = config.getMapList("items");
 
         for (Map map : list) {
             try {
@@ -459,9 +453,20 @@ public class Item implements Cloneable, BlockID, ItemID {
     }
 
     public static Item fromJson(Map<String, Object> data) {
-        String nbt = (String) data.getOrDefault("nbt_hex", "");
+        String nbt = (String) data.get("nbt_b64");
+        byte[] nbtBytes;
+        if (nbt != null) {
+            nbtBytes = Base64.getDecoder().decode(nbt);
+        } else { // Support old format for backwards compat
+            nbt = (String) data.getOrDefault("nbt_hex", null);
+            if (nbt == null) {
+                nbtBytes = new byte[0];
+            } else {
+                nbtBytes = Utils.parseHexBinary(nbt);
+            }
+        }
 
-        return get(Utils.toInt(data.get("id")) & 0xffff, Utils.toInt(data.getOrDefault("damage", 0)) & 0xffff, Utils.toInt(data.getOrDefault("count", 1)), nbt.isEmpty() ? new byte[0] : Utils.parseHexBinary(nbt));
+        return get(Utils.toInt(data.get("id")) & 0xffff, Utils.toInt(data.getOrDefault("damage", 0)) & 0xffff, Utils.toInt(data.getOrDefault("count", 1)), nbtBytes);
     }
 
     public static Item[] fromStringMultiple(String str) {
@@ -578,7 +583,7 @@ public class Item implements Cloneable, BlockID, ItemID {
             if (entry.getShort("id") == id) {
                 Enchantment e = Enchantment.getEnchantment(entry.getShort("id"));
                 if (e != null) {
-                    e.setLevel(entry.getShort("lvl"));
+                    e.setLevel(entry.getShort("lvl"), false);
                     return e;
                 }
             }
@@ -640,7 +645,7 @@ public class Item implements Cloneable, BlockID, ItemID {
         for (CompoundTag entry : ench.getAll()) {
             Enchantment e = Enchantment.getEnchantment(entry.getShort("id"));
             if (e != null) {
-                e.setLevel(entry.getShort("lvl"));
+                e.setLevel(entry.getShort("lvl"), false);
                 enchantments.add(e);
             }
         }
@@ -957,6 +962,14 @@ public class Item implements Cloneable, BlockID, ItemID {
     }
 
     public boolean isUnbreakable() {
+        return false;
+    }
+
+    public boolean onUse(Player player, int ticksUsed) {
+        return false;
+    }
+
+    public boolean onRelease(Player player, int ticksUsed) {
         return false;
     }
 

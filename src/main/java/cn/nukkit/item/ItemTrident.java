@@ -6,12 +6,12 @@ import cn.nukkit.entity.projectile.EntityProjectile;
 import cn.nukkit.entity.projectile.EntityThrownTrident;
 import cn.nukkit.event.entity.EntityShootBowEvent;
 import cn.nukkit.event.entity.ProjectileLaunchEvent;
+import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.DoubleTag;
 import cn.nukkit.nbt.tag.FloatTag;
 import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.network.protocol.LevelSoundEventPacket;
-import cn.nukkit.scheduler.NukkitRunnable;
 
 /**
  * Created by PetteriM1
@@ -44,8 +44,14 @@ public class ItemTrident extends ItemTool {
     public int getAttackDamage() {
         return 9;
     }
-    
-    public boolean onReleaseUsing(Player player) {
+
+    @Override
+    public boolean onClickAir(Player player, Vector3 directionVector) {
+        return true;
+    }
+
+    @Override
+    public boolean onRelease(Player player, int ticksUsed) {
         this.useOn(player);
 
         CompoundTag nbt = new CompoundTag()
@@ -61,8 +67,7 @@ public class ItemTrident extends ItemTool {
                         .add(new FloatTag("", (player.yaw > 180 ? 360 : 0) - (float) player.yaw))
                         .add(new FloatTag("", (float) -player.pitch)));
 
-        int diff = (Server.getInstance().getTick() - player.getStartActionTick());
-        double p = (double) diff / 20;
+        double p = (double) ticksUsed / 20;
 
         double f = Math.min((p * p + p * 2) / 3, 1) * 2;
         EntityThrownTrident trident = new EntityThrownTrident(player.chunk, nbt, player, f == 2);
@@ -70,7 +75,7 @@ public class ItemTrident extends ItemTool {
 
         EntityShootBowEvent entityShootBowEvent = new EntityShootBowEvent(player, this, trident, f);
 
-        if (f < 0.1 || diff < 5) {
+        if (f < 0.1 || ticksUsed < 5) {
             entityShootBowEvent.setCancelled();
         }
 
@@ -88,12 +93,8 @@ public class ItemTrident extends ItemTool {
                     entityShootBowEvent.getProjectile().spawnToAll();
                     player.getLevel().addLevelSoundEvent(player, LevelSoundEventPacket.SOUND_ITEM_TRIDENT_THROW);
                     if (!player.isCreative()) {
-                        // idk why but trident returns to inventory without this
-                        new NukkitRunnable() {
-                            public void run() {
-                                player.getInventory().decreaseCount(player.getInventory().getHeldItemIndex());
-                            }
-                        }.runTaskLater(null, 1);
+                        this.count--;
+                        player.getInventory().setItemInHand(this);
                     }
                 }
             }

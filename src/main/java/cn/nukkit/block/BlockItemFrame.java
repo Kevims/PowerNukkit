@@ -4,7 +4,6 @@ import cn.nukkit.Player;
 import cn.nukkit.blockentity.BlockEntity;
 import cn.nukkit.blockentity.BlockEntityItemFrame;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemBlock;
 import cn.nukkit.item.ItemItemFrame;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.Sound;
@@ -163,7 +162,7 @@ public class BlockItemFrame extends BlockTransparentMeta {
     }
 
     public BlockFace getFacing() {
-        switch (this.getDamage() % 8) {
+        switch (this.getDamage() & 3) {
             case 0:
                 return BlockFace.WEST;
             case 1:
@@ -175,5 +174,10 @@ public class BlockItemFrame extends BlockTransparentMeta {
         }
 
         return null;
+    }
+
+    @Override
+    public double getHardness() {
+        return 0.25;
     }
 }

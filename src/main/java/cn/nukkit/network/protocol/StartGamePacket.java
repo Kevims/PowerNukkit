@@ -1,13 +1,26 @@
 package cn.nukkit.network.protocol;
 
+import cn.nukkit.Server;
 import cn.nukkit.level.GameRules;
 import cn.nukkit.level.GlobalBlockPalette;
+import cn.nukkit.utils.BinaryStream;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import lombok.ToString;
+import lombok.extern.log4j.Log4j2;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 
 /**
  * Created on 15-10-13.
  */
-@ToString
+@Log4j2
+@ToString(exclude = {"blockPalette"})
 public class StartGamePacket extends DataPacket {
 
     public static final byte NETWORK_ID = ProtocolInfo.START_GAME_PACKET;
@@ -17,6 +30,31 @@ public class StartGamePacket extends DataPacket {
     public static final int GAME_PUBLISH_SETTING_FRIENDS_ONLY = 2;
     public static final int GAME_PUBLISH_SETTING_FRIENDS_OF_FRIENDS = 3;
     public static final int GAME_PUBLISH_SETTING_PUBLIC = 4;
+
+    private static final byte[] ITEM_DATA_PALETTE;
+
+    static {
+        InputStream stream = Server.class.getClassLoader().getResourceAsStream("runtime_item_ids.json");
+        if (stream == null) {
+            throw new AssertionError("Unable to locate RuntimeID table");
+        }
+        Reader reader = new InputStreamReader(stream, StandardCharsets.UTF_8);
+
+        Gson gson = new Gson();
+        Type collectionType = new TypeToken<Collection<ItemData>>() {
+        }.getType();
+        Collection<ItemData> entries = gson.fromJson(reader, collectionType);
+        BinaryStream paletteBuffer = new BinaryStream();
+
+        paletteBuffer.putUnsignedVarInt(entries.size());
+
+        for (ItemData data : entries) {
+            paletteBuffer.putString(data.name);
+            paletteBuffer.putLShort(data.id);
+        }
+
+        ITEM_DATA_PALETTE = paletteBuffer.getBuffer();
+    }
 
     @Override
     public byte pid() {
@@ -41,7 +79,7 @@ public class StartGamePacket extends DataPacket {
     public int spawnZ;
     public boolean hasAchievementsDisabled = true;
     public int dayCycleStopTime = -1; //-1 = not stopped, any positive value = stopped at that time
-    public boolean eduMode = false;
+    public int eduEditionOffer = 0;
     public boolean hasEduFeaturesEnabled = false;
     public float rainLevel;
     public float lightningLevel;
@@ -63,10 +101,13 @@ public class StartGamePacket extends DataPacket {
     public boolean isUsingMsaGamertagsOnly = false;
     public boolean isFromWorldTemplate = false;
     public boolean isWorldTemplateOptionLocked = false;
+    public boolean isOnlySpawningV1Villagers = false;
+    public String vanillaVersion = ProtocolInfo.MINECRAFT_VERSION_NETWORK;
     public String levelId = ""; //base64 string, usually the same as world folder name in vanilla
     public String worldName;
     public String premiumWorldTemplateId = "";
     public boolean isTrial = false;
+    public boolean isMovementServerAuthoritative;
     public long currentTick;
 
     public int enchantmentSeed;
@@ -96,7 +137,7 @@ public class StartGamePacket extends DataPacket {
         this.putBlockVector3(this.spawnX, this.spawnY, this.spawnZ);
         this.putBoolean(this.hasAchievementsDisabled);
         this.putVarInt(this.dayCycleStopTime);
-        this.putBoolean(this.eduMode);
+        this.putVarInt(this.eduEditionOffer);
         this.putBoolean(this.hasEduFeaturesEnabled);
         this.putLFloat(this.rainLevel);
         this.putLFloat(this.lightningLevel);
@@ -118,14 +159,23 @@ public class StartGamePacket extends DataPacket {
         this.putBoolean(this.isUsingMsaGamertagsOnly);
         this.putBoolean(this.isFromWorldTemplate);
         this.putBoolean(this.isWorldTemplateOptionLocked);
+        this.putBoolean(this.isOnlySpawningV1Villagers);
+        this.putString(this.vanillaVersion);
+
         this.putString(this.levelId);
         this.putString(this.worldName);
         this.putString(this.premiumWorldTemplateId);
         this.putBoolean(this.isTrial);
+        this.putBoolean(this.isMovementServerAuthoritative);
         this.putLLong(this.currentTick);
         this.putVarInt(this.enchantmentSeed);
-        this.put(GlobalBlockPalette.getCompiledTable());
+        this.put(GlobalBlockPalette.BLOCK_PALETTE);
+        this.put(ITEM_DATA_PALETTE);
         this.putString(this.multiplayerCorrelationId);
     }
 
+    private static class ItemData {
+        private String name;
+        private int id;
+    }
 }

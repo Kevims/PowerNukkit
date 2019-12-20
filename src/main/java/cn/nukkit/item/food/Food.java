@@ -31,7 +31,7 @@ public abstract class Food {
             .addRelative(Item.GOLDEN_APPLE_ENCHANTED));
     public static final Food beef_raw = registerDefaultFood(new FoodNormal(3, 1.8F).addRelative(Item.RAW_BEEF));
     public static final Food beetroot = registerDefaultFood(new FoodNormal(1, 1.2F).addRelative(Item.BEETROOT));
-    public static final Food beetroot_soup = registerDefaultFood(new FoodNormal(6, 7.2F).addRelative(Item.BEETROOT_SOUP));
+    public static final Food beetroot_soup = registerDefaultFood(new FoodInBowl(6, 7.2F).addRelative(Item.BEETROOT_SOUP));
     public static final Food bread = registerDefaultFood(new FoodNormal(5, 6F).addRelative(Item.BREAD));
     public static final Food cake_slice = registerDefaultFood(new FoodNormal(2, 0.4F)
             .addRelative(Block.CAKE_BLOCK, 0).addRelative(Block.CAKE_BLOCK, 1).addRelative(Block.CAKE_BLOCK, 2)
@@ -80,6 +80,7 @@ public abstract class Food {
             .addEffect(Effect.getEffect(Effect.POISON).setAmplifier(4).setDuration(60 * 20))
             .addRelative(Item.PUFFERFISH));
     public static final Food dried_kelp = registerDefaultFood(new FoodNormal(1, 0.6F).addRelative(Item.DRIED_KELP));
+    public static final Food sweet_berries = registerDefaultFood(new FoodNormal(2, 0.4F).addRelative(Item.SWEET_BERRIES));
 
     //Opened API for plugins
     public static Food registerFood(Food food, Plugin plugin) {
