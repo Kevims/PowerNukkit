@@ -60,4 +60,9 @@ public class LongArrayTag extends Tag {
         System.arraycopy(data, 0, cp, 0, data.length);
         return new LongArrayTag(getName(), cp);
     }
+
+    @Override
+    public long[] parseValue() {
+        return data;
+    }
 }
