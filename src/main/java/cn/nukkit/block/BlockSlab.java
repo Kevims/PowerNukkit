@@ -92,4 +92,15 @@ public abstract class BlockSlab extends BlockTransparentMeta {
 
         return true;
     }
+
+    @Override
+    public boolean isFaceSolid(BlockFace face) {
+        if (face == BlockFace.UP) {
+            return (getDamage() & 0x08) == 0x08;
+        } else if (face == BlockFace.DOWN) {
+            return (getDamage() & 0x08) == 0x00;
+        } else {
+            return false;
+        }
+    }
 }

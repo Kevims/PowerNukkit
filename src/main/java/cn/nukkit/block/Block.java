@@ -615,6 +615,10 @@ public abstract class Block extends Position implements Metadatable, Cloneable, 
         return true;
     }
 
+    public boolean isFaceSolid(BlockFace face) {
+        return isSolid();
+    }
+
     public boolean canBeFlowedInto() {
         return false;
     }

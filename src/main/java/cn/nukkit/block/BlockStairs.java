@@ -145,4 +145,15 @@ public abstract class BlockStairs extends BlockTransparentMeta implements Faceab
     public BlockFace getBlockFace() {
         return BlockFace.fromHorizontalIndex(this.getDamage() & 0x7);
     }
+
+    @Override
+    public boolean isFaceSolid(BlockFace face) {
+        if (face == BlockFace.UP) {
+            return (getDamage() & 0x04) == 0x04;
+        } else if (face == BlockFace.DOWN) {
+            return (getDamage() & 0x04) == 0x00;
+        } else {
+            return getBlockFace().getOpposite().equals(face);
+        }
+    }
 }

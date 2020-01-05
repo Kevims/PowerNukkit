@@ -35,11 +35,7 @@ public class BlockLantern extends BlockFlowable {
             return false;
         } else if (up instanceof BlockFence) {
             return true;
-        } else if (up instanceof BlockSlab) {
-            return (up.getDamage() & 0x08) == 0x00;
-        } else if (up instanceof BlockStairs) {
-            return (up.getDamage() & 0x04) == 0x00;
-        } else if (up.isSolid()) {
+        } else if (up.isFaceSolid(BlockFace.DOWN)) {
             return true;
         } else {
             return false;
@@ -52,11 +48,7 @@ public class BlockLantern extends BlockFlowable {
             return false;
         } else if (down instanceof BlockFence) {
             return true;
-        } else if (down instanceof BlockSlab) {
-            return (down.getDamage() & 0x08) == 0x08;
-        } else if (down instanceof BlockStairs) {
-            return (down.getDamage() & 0x04) == 0x04;
-        } else if (down.isSolid()) {
+        } if (down.isFaceSolid(BlockFace.UP)) {
             return true;
         } else {
             return false;
