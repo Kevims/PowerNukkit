@@ -286,6 +286,8 @@ public class BlockFire extends BlockFlowable {
                         (block.getDamage() & 7) == 7) {
 
                     return true;
+                } else if (block instanceof BlockCampfire && (block.getDamage() & 0x4) == 0x4) {
+                    return true;
                 }
             }
         }

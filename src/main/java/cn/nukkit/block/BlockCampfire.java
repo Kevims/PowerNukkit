@@ -122,12 +122,25 @@ public class BlockCampfire extends BlockTransparentMeta implements Faceable {
     @Override
     public int onUpdate(int type) {
         if (type == Level.BLOCK_UPDATE_NORMAL) {
+            Block layer1 = getLevelBlockAtLayer(1);
+            boolean hasWater = layer1 instanceof BlockWater || layer1 instanceof BlockIceFrosted;
             if (!isExtinguished()) {
-                Block layer1 = getLevelBlockAtLayer(1);
-                if (layer1 instanceof BlockWater || layer1 instanceof BlockIceFrosted) {
+                if (hasWater) {
                     setExtinguished(true);
                     this.level.setBlock(this, this, true, true);
                     this.level.addSound(this, Sound.RANDOM_FIZZ);
+                }
+            } else if (!hasWater) {
+                for (BlockFace face: new BlockFace[]{ BlockFace.NORTH, BlockFace.SOUTH, BlockFace.WEST, BlockFace.EAST, BlockFace.UP }) {
+                    Block side = getSide(face);
+                    if (side.getId() == FIRE) {
+                        setExtinguished(false);
+                        this.level.setBlock(this, this, true, true);
+                        if (face == BlockFace.UP) {
+                            this.level.setBlock(side, new BlockAir(), true, true);
+                        }
+                        break;
+                    }
                 }
             }
             return type;
@@ -247,5 +260,15 @@ public class BlockCampfire extends BlockTransparentMeta implements Faceable {
         }
 
         return super.getComparatorInputOverride();
+    }
+
+    @Override
+    public int getBurnChance() {
+        return isExtinguished()? 5 : 0;
+    }
+
+    @Override
+    public int getBurnAbility() {
+        return isExtinguished()? 20 : 0;
     }
 }
