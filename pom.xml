@@ -2,10 +2,33 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <name>PowerNukkit</name>
+    <name>powernukkit</name>
     <groupId>br.com.gamemods</groupId>
     <artifactId>powernukkit</artifactId>
-    <version>1.1.1-PN-SNAPSHOT</version>
+    <version>1.1.0</version>
+    <packaging>jar</packaging>
+    <!-- TODO http://kirang89.github.io/blog/2013/01/20/uploading-your-jar-to-maven-central/ -->
+    <description>A Minecraft Bedrock Edition server software made in Java.</description>
+    <url>https://github.com/GameModsBR/PowerNukkit</url>
+    <licenses>
+        <license>
+            <name>GPL-v3.0</name>
+            <url>http://www.gnu.org/licenses/gpl-3.0.txt</url>
+        </license>
+    </licenses>
+    <scm>
+        <connection>scm:git:https://github.com/GameModsBR/PowerNukkit.git</connection>
+        <url>https://github.com/GameModsBR/PowerNukkit.git</url>
+        <tag>HEAD</tag>
+    </scm>
+    <developers>
+        <developer>
+            <name>José Roberto de Araújo Júnior</name>
+            <email>jose.rob.jr@gmail.com</email>
+            <organization>GameMods</organization>
+            <organizationUrl>https://github.com/GameModsBR</organizationUrl>
+        </developer>
+    </developers>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -42,13 +65,11 @@
 
     <distributionManagement>
         <repository>
-            <id>releases</id>
-            <name>nukkitx-releases</name>
-            <url>https://repo.nukkitx.com/release</url>
+            <id>powernukkit-releases</id>
+            <url>https://api.bintray.com/maven/gamemods/GameMods/PowerNukkit/</url>
         </repository>
         <snapshotRepository>
-            <id>snapshots</id>
-            <name>nukkitx-snapshots</name>
+            <id>powernukkit-snapshots</id>
             <url>https://repo.nukkitx.com/snapshot</url>
         </snapshotRepository>
     </distributionManagement>
@@ -284,6 +305,8 @@
                                 implementation="com.github.edwgiz.mavenShadePlugin.log4j2CacheTransformer.PluginsCacheFileTransformer">
                         </transformer>
                     </transformers>
+                    <shadedArtifactAttached>true</shadedArtifactAttached>
+                    <shadedClassifierName>all</shadedClassifierName>
                 </configuration>
             </plugin>
             <plugin>
@@ -332,6 +355,51 @@
                         <tags>false</tags>
                         <forceLongFormat>false</forceLongFormat>
                     </gitDescribe>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jarsigner-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>sign</id>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <keystore>/path/to/the/keystore</keystore>
+                    <alias>Alias name</alias>
+                    <storepass>Store password</storepass>
+                    <keypass>Key password</keypass>
                 </configuration>
             </plugin>
         </plugins>
