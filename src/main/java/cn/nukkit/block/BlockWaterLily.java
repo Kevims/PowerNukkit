@@ -1,36 +1,24 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemBlock;
 import cn.nukkit.level.Level;
 import cn.nukkit.math.AxisAlignedBB;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.AIR;
 
 /**
  * Created on 2015/12/1 by xtypr.
  * Package cn.nukkit.block in project Nukkit .
  */
-public class BlockWaterLily extends BlockFlowable {
+public class BlockWaterLily extends FloodableBlock {
 
-    public BlockWaterLily() {
-        this(0);
-    }
-
-    public BlockWaterLily(int meta) {
-        // Lily pad can't have meta. Also stops the server from throwing an exception with the block palette.
-        super(0);
-    }
-
-    @Override
-    public String getName() {
-        return "Lily Pad";
-    }
-
-    @Override
-    public int getId() {
-        return WATER_LILY;
+    public BlockWaterLily(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -64,10 +52,10 @@ public class BlockWaterLily extends BlockFlowable {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         if (target instanceof BlockWater || target.getLevelBlockAtLayer(1) instanceof BlockWater) {
             Block up = target.up();
-            if (up.getId() == Block.AIR) {
+            if (up.getId() == AIR) {
                 this.getLevel().setBlock(up, this, true, true);
                 return true;
             }
@@ -89,7 +77,7 @@ public class BlockWaterLily extends BlockFlowable {
 
     @Override
     public Item toItem() {
-        return new ItemBlock(this, 0);
+        return Item.get(id, 0);
     }
 
     @Override
@@ -100,15 +88,5 @@ public class BlockWaterLily extends BlockFlowable {
     @Override
     public boolean canPassThrough() {
         return false;
-    }
-
-    @Override
-    public int getFullId() {
-        return this.getId() << DATA_BITS;
-    }
-
-    @Override
-    public void setDamage(int meta) {
-
     }
 }

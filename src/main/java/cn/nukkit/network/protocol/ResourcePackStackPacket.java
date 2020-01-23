@@ -1,48 +1,52 @@
 package cn.nukkit.network.protocol;
 
-import cn.nukkit.resourcepacks.ResourcePack;
+import cn.nukkit.pack.Pack;
+import cn.nukkit.utils.Binary;
+import io.netty.buffer.ByteBuf;
 import lombok.ToString;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @ToString
 public class ResourcePackStackPacket extends DataPacket {
 
-    public static final byte NETWORK_ID = ProtocolInfo.RESOURCE_PACK_STACK_PACKET;
+    public static final short NETWORK_ID = ProtocolInfo.RESOURCE_PACK_STACK_PACKET;
 
     public boolean mustAccept = false;
-    public ResourcePack[] behaviourPackStack = new ResourcePack[0];
-    public ResourcePack[] resourcePackStack = new ResourcePack[0];
+    public final List<Pack> behaviourPackStack = new ArrayList<>();
+    public final List<Pack> resourcePackStack = new ArrayList<>();
     public boolean isExperimental = false;
-    public String gameVersion = ProtocolInfo.MINECRAFT_VERSION_NETWORK;
+    public String gameVersion = "*"; // Why it sends this, I don't know
 
     @Override
-    public void decode() {
+    protected void decode(ByteBuf buffer) {
 
     }
 
     @Override
-    public void encode() {
-        this.reset();
-        this.putBoolean(this.mustAccept);
+    protected void encode(ByteBuf buffer) {
+        buffer.writeBoolean(this.mustAccept);
 
-        this.putUnsignedVarInt(this.behaviourPackStack.length);
-        for (ResourcePack entry : this.behaviourPackStack) {
-            this.putString(entry.getPackId().toString());
-            this.putString(entry.getPackVersion());
-            this.putString(""); //TODO: subpack name
+        Binary.writeUnsignedVarInt(buffer, this.behaviourPackStack.size());
+        for (Pack entry : this.behaviourPackStack) {
+            Binary.writeString(buffer, entry.getId().toString());
+            Binary.writeString(buffer, entry.getVersion().toString());
+            Binary.writeString(buffer, ""); //TODO: subpack name
         }
 
-        this.putUnsignedVarInt(this.resourcePackStack.length);
-        for (ResourcePack entry : this.resourcePackStack) {
-            this.putString(entry.getPackId().toString());
-            this.putString(entry.getPackVersion());
-            this.putString(""); //TODO: subpack name
+        Binary.writeUnsignedVarInt(buffer, this.resourcePackStack.size());
+        for (Pack entry : this.resourcePackStack) {
+            Binary.writeString(buffer, entry.getId().toString());
+            Binary.writeString(buffer, entry.getVersion().toString());
+            Binary.writeString(buffer, ""); //TODO: subpack name
         }
-        this.putBoolean(this.isExperimental);
-        this.putString(this.gameVersion);
+        buffer.writeBoolean(this.isExperimental);
+        Binary.writeString(buffer, this.gameVersion);
     }
 
     @Override
-    public byte pid() {
+    public short pid() {
         return NETWORK_ID;
     }
 }

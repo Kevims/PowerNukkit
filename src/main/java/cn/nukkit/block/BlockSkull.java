@@ -4,31 +4,24 @@ package cn.nukkit.block;
  * author: Justin
  */
 
-import cn.nukkit.Player;
 import cn.nukkit.blockentity.BlockEntity;
 import cn.nukkit.blockentity.BlockEntitySkull;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemSkull;
+import cn.nukkit.item.ItemIds;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.Tag;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 
-public class BlockSkull extends BlockTransparentMeta {
+public class BlockSkull extends BlockTransparent {
 
-    public BlockSkull() {
-        this(0);
-    }
-
-    public BlockSkull(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public int getId() {
-        return SKULL_BLOCK;
+    public BlockSkull(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -57,19 +50,7 @@ public class BlockSkull extends BlockTransparentMeta {
     }
 
     @Override
-    public String getName() {
-        int itemMeta = 0;
-
-        if (this.level != null) {
-            BlockEntity blockEntity = getLevel().getBlockEntity(this);
-            if (blockEntity != null) itemMeta = blockEntity.namedTag.getByte("SkullType");
-        }
-
-        return ItemSkull.getItemSkullName(itemMeta);
-    }
-
-    @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         switch (face) {
             case NORTH:
             case SOUTH:
@@ -87,16 +68,16 @@ public class BlockSkull extends BlockTransparentMeta {
         CompoundTag nbt = new CompoundTag()
                 .putString("id", BlockEntity.SKULL)
                 .putByte("SkullType", item.getDamage())
-                .putInt("x", block.getFloorX())
-                .putInt("y", block.getFloorY())
-                .putInt("z", block.getFloorZ())
+                .putInt("x", block.getX())
+                .putInt("y", block.getY())
+                .putInt("z", block.getZ())
                 .putByte("Rot", (int) Math.floor((player.yaw * 16 / 360) + 0.5) & 0x0f);
         if (item.hasCustomBlockData()) {
             for (Tag aTag : item.getCustomBlockData().getAllTags()) {
                 nbt.put(aTag.getName(), aTag);
             }
         }
-        BlockEntitySkull skull = (BlockEntitySkull) BlockEntity.createBlockEntity(BlockEntity.SKULL, getLevel().getChunk((int) block.x >> 4, (int) block.z >> 4), nbt);
+        BlockEntitySkull skull = (BlockEntitySkull) BlockEntity.createBlockEntity(BlockEntity.SKULL, getLevel().getChunk(block.getChunkX(), block.getChunkZ()), nbt);
         if (skull == null) {
             return false;
         }
@@ -112,7 +93,7 @@ public class BlockSkull extends BlockTransparentMeta {
         int dropMeta = 0;
         if (blockEntity != null) dropMeta = blockEntity.namedTag.getByte("SkullType");
         return new Item[]{
-                new ItemSkull(dropMeta)
+                Item.get(ItemIds.SKULL, dropMeta)
         };
     }
 
@@ -121,7 +102,7 @@ public class BlockSkull extends BlockTransparentMeta {
         BlockEntity blockEntity = getLevel().getBlockEntity(this);
         int itemMeta = 0;
         if (blockEntity != null) itemMeta = blockEntity.namedTag.getByte("SkullType");
-        return new ItemSkull(itemMeta);
+        return Item.get(ItemIds.SKULL, itemMeta);
     }
 
     @Override
@@ -133,5 +114,4 @@ public class BlockSkull extends BlockTransparentMeta {
     public BlockColor getColor() {
         return BlockColor.AIR_BLOCK_COLOR;
     }
-
 }

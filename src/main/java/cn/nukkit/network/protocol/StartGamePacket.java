@@ -1,29 +1,21 @@
 package cn.nukkit.network.protocol;
 
-import cn.nukkit.Server;
-import cn.nukkit.level.GameRules;
-import cn.nukkit.level.GlobalBlockPalette;
-import cn.nukkit.utils.BinaryStream;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import cn.nukkit.level.gamerule.GameRuleMap;
+import cn.nukkit.registry.BlockRegistry;
+import cn.nukkit.registry.ItemRegistry;
+import cn.nukkit.utils.Binary;
+import io.netty.buffer.ByteBuf;
 import lombok.ToString;
 import lombok.extern.log4j.Log4j2;
-
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
 
 /**
  * Created on 15-10-13.
  */
 @Log4j2
-@ToString(exclude = {"blockPalette"})
+@ToString
 public class StartGamePacket extends DataPacket {
 
-    public static final byte NETWORK_ID = ProtocolInfo.START_GAME_PACKET;
+    public static final short NETWORK_ID = ProtocolInfo.START_GAME_PACKET;
 
     public static final int GAME_PUBLISH_SETTING_NO_MULTI_PLAY = 0;
     public static final int GAME_PUBLISH_SETTING_INVITE_ONLY = 1;
@@ -31,35 +23,7 @@ public class StartGamePacket extends DataPacket {
     public static final int GAME_PUBLISH_SETTING_FRIENDS_OF_FRIENDS = 3;
     public static final int GAME_PUBLISH_SETTING_PUBLIC = 4;
 
-    private static final byte[] ITEM_DATA_PALETTE;
-
-    static {
-        InputStream stream = Server.class.getClassLoader().getResourceAsStream("runtime_item_ids.json");
-        if (stream == null) {
-            throw new AssertionError("Unable to locate RuntimeID table");
-        }
-        Reader reader = new InputStreamReader(stream, StandardCharsets.UTF_8);
-
-        Gson gson = new Gson();
-        Type collectionType = new TypeToken<Collection<ItemData>>() {
-        }.getType();
-        Collection<ItemData> entries = gson.fromJson(reader, collectionType);
-        BinaryStream paletteBuffer = new BinaryStream();
-
-        paletteBuffer.putUnsignedVarInt(entries.size());
-
-        for (ItemData data : entries) {
-            paletteBuffer.putString(data.name);
-            paletteBuffer.putLShort(data.id);
-        }
-
-        ITEM_DATA_PALETTE = paletteBuffer.getBuffer();
-    }
-
-    @Override
-    public byte pid() {
-        return NETWORK_ID;
-    }
+    public GameRuleMap gameRules;
 
     public long entityUniqueId;
     public long entityRuntimeId;
@@ -90,7 +54,11 @@ public class StartGamePacket extends DataPacket {
     public int platformBroadcastIntent = GAME_PUBLISH_SETTING_PUBLIC;
     public boolean commandsEnabled;
     public boolean isTexturePacksRequired = false;
-    public GameRules gameRules;
+
+    @Override
+    public short pid() {
+        return NETWORK_ID;
+    }
     public boolean bonusChest = false;
     public boolean hasStartWithMapEnabled = false;
     public int permissionLevel = 1;
@@ -102,7 +70,7 @@ public class StartGamePacket extends DataPacket {
     public boolean isFromWorldTemplate = false;
     public boolean isWorldTemplateOptionLocked = false;
     public boolean isOnlySpawningV1Villagers = false;
-    public String vanillaVersion = ProtocolInfo.MINECRAFT_VERSION_NETWORK;
+    public String vanillaVersion = "*";
     public String levelId = ""; //base64 string, usually the same as world folder name in vanilla
     public String worldName;
     public String premiumWorldTemplateId = "";
@@ -115,63 +83,62 @@ public class StartGamePacket extends DataPacket {
     public String multiplayerCorrelationId = "";
 
     @Override
-    public void decode() {
+    protected void decode(ByteBuf buffer) {
 
     }
 
     @Override
-    public void encode() {
-        this.reset();
-        this.putEntityUniqueId(this.entityUniqueId);
-        this.putEntityRuntimeId(this.entityRuntimeId);
-        this.putVarInt(this.playerGamemode);
-        this.putVector3f(this.x, this.y, this.z);
-        this.putLFloat(this.yaw);
-        this.putLFloat(this.pitch);
+    protected void encode(ByteBuf buffer) {
+        Binary.writeEntityUniqueId(buffer, this.entityUniqueId);
+        Binary.writeEntityRuntimeId(buffer, this.entityRuntimeId);
+        Binary.writeVarInt(buffer, this.playerGamemode);
+        Binary.writeVector3f(buffer, this.x, this.y, this.z);
+        buffer.writeFloatLE(this.yaw);
+        buffer.writeFloatLE(this.pitch);
 
-        this.putVarInt(this.seed);
-        this.putVarInt(this.dimension);
-        this.putVarInt(this.generator);
-        this.putVarInt(this.worldGamemode);
-        this.putVarInt(this.difficulty);
-        this.putBlockVector3(this.spawnX, this.spawnY, this.spawnZ);
-        this.putBoolean(this.hasAchievementsDisabled);
-        this.putVarInt(this.dayCycleStopTime);
-        this.putVarInt(this.eduEditionOffer);
-        this.putBoolean(this.hasEduFeaturesEnabled);
-        this.putLFloat(this.rainLevel);
-        this.putLFloat(this.lightningLevel);
-        this.putBoolean(this.hasConfirmedPlatformLockedContent);
-        this.putBoolean(this.multiplayerGame);
-        this.putBoolean(this.broadcastToLAN);
-        this.putVarInt(this.xblBroadcastIntent);
-        this.putVarInt(this.platformBroadcastIntent);
-        this.putBoolean(this.commandsEnabled);
-        this.putBoolean(this.isTexturePacksRequired);
-        this.putGameRules(this.gameRules);
-        this.putBoolean(this.bonusChest);
-        this.putBoolean(this.hasStartWithMapEnabled);
-        this.putVarInt(this.permissionLevel);
-        this.putLInt(this.serverChunkTickRange);
-        this.putBoolean(this.hasLockedBehaviorPack);
-        this.putBoolean(this.hasLockedResourcePack);
-        this.putBoolean(this.isFromLockedWorldTemplate);
-        this.putBoolean(this.isUsingMsaGamertagsOnly);
-        this.putBoolean(this.isFromWorldTemplate);
-        this.putBoolean(this.isWorldTemplateOptionLocked);
-        this.putBoolean(this.isOnlySpawningV1Villagers);
-        this.putString(this.vanillaVersion);
+        Binary.writeVarInt(buffer, this.seed);
+        Binary.writeVarInt(buffer, this.dimension);
+        Binary.writeVarInt(buffer, this.generator);
+        Binary.writeVarInt(buffer, this.worldGamemode);
+        Binary.writeVarInt(buffer, this.difficulty);
+        Binary.writeBlockVector3(buffer, this.spawnX, this.spawnY, this.spawnZ);
+        buffer.writeBoolean(this.hasAchievementsDisabled);
+        Binary.writeVarInt(buffer, this.dayCycleStopTime);
+        Binary.writeVarInt(buffer, this.eduEditionOffer);
+        buffer.writeBoolean(this.hasEduFeaturesEnabled);
+        buffer.writeFloatLE(this.rainLevel);
+        buffer.writeFloatLE(this.lightningLevel);
+        buffer.writeBoolean(this.hasConfirmedPlatformLockedContent);
+        buffer.writeBoolean(this.multiplayerGame);
+        buffer.writeBoolean(this.broadcastToLAN);
+        Binary.writeVarInt(buffer, this.xblBroadcastIntent);
+        Binary.writeVarInt(buffer, this.platformBroadcastIntent);
+        buffer.writeBoolean(this.commandsEnabled);
+        buffer.writeBoolean(this.isTexturePacksRequired);
+        Binary.writeGameRules(buffer, this.gameRules);
+        buffer.writeBoolean(this.bonusChest);
+        buffer.writeBoolean(this.hasStartWithMapEnabled);
+        Binary.writeVarInt(buffer, this.permissionLevel);
+        buffer.writeIntLE(this.serverChunkTickRange);
+        buffer.writeBoolean(this.hasLockedBehaviorPack);
+        buffer.writeBoolean(this.hasLockedResourcePack);
+        buffer.writeBoolean(this.isFromLockedWorldTemplate);
+        buffer.writeBoolean(this.isUsingMsaGamertagsOnly);
+        buffer.writeBoolean(this.isFromWorldTemplate);
+        buffer.writeBoolean(this.isWorldTemplateOptionLocked);
+        buffer.writeBoolean(this.isOnlySpawningV1Villagers);
+        Binary.writeString(buffer, this.vanillaVersion);
 
-        this.putString(this.levelId);
-        this.putString(this.worldName);
-        this.putString(this.premiumWorldTemplateId);
-        this.putBoolean(this.isTrial);
-        this.putBoolean(this.isMovementServerAuthoritative);
-        this.putLLong(this.currentTick);
-        this.putVarInt(this.enchantmentSeed);
-        this.put(GlobalBlockPalette.BLOCK_PALETTE);
-        this.put(ITEM_DATA_PALETTE);
-        this.putString(this.multiplayerCorrelationId);
+        Binary.writeString(buffer, this.levelId);
+        Binary.writeString(buffer, this.worldName);
+        Binary.writeString(buffer, this.premiumWorldTemplateId);
+        buffer.writeBoolean(this.isTrial);
+        buffer.writeBoolean(this.isMovementServerAuthoritative);
+        buffer.writeLongLE(this.currentTick);
+        Binary.writeVarInt(buffer, this.enchantmentSeed);
+        buffer.writeBytes(BlockRegistry.get().getCachedPalette());
+        buffer.writeBytes(ItemRegistry.get().getCachedRuntimeItems());
+        Binary.writeString(buffer, this.multiplayerCorrelationId);
     }
 
     private static class ItemData {

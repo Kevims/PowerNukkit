@@ -1,11 +1,14 @@
 package cn.nukkit.network.protocol;
 
 import cn.nukkit.math.Vector3f;
+import cn.nukkit.utils.Binary;
+import cn.nukkit.utils.Identifier;
+import io.netty.buffer.ByteBuf;
 import lombok.ToString;
 
 @ToString
 public class LevelSoundEventPacket extends DataPacket {
-    public static final byte NETWORK_ID = ProtocolInfo.LEVEL_SOUND_EVENT_PACKET;
+    public static final short NETWORK_ID = ProtocolInfo.LEVEL_SOUND_EVENT_PACKET;
 
     public static final int SOUND_ITEM_USE_ON = 0;
     public static final int SOUND_HIT = 1;
@@ -259,41 +262,40 @@ public class LevelSoundEventPacket extends DataPacket {
     public static final int SOUND_CANT_BREED = 254;
     public static final int SOUND_UNDEFINED = 255;
 
-    public int sound;
+    public int event;
     public float x;
     public float y;
     public float z;
-    public int extraData = -1;
-    public String entityIdentifier;
+    public int data = -1;
+    public Identifier identifier;
     public boolean isBabyMob;
     public boolean isGlobal;
 
     @Override
-    public void decode() {
-        this.sound = (int) this.getUnsignedVarInt();
-        Vector3f v = this.getVector3f();
-        this.x = v.x;
-        this.y = v.y;
-        this.z = v.z;
-        this.extraData = this.getVarInt();
-        this.entityIdentifier = this.getString();
-        this.isBabyMob = this.getBoolean();
-        this.isGlobal = this.getBoolean();
+    protected void decode(ByteBuf buffer) {
+        this.event = (int) Binary.readUnsignedVarInt(buffer);
+        Vector3f v = Binary.readVector3f(buffer);
+        this.x = (float) v.x;
+        this.y = (float) v.y;
+        this.z = (float) v.z;
+        this.data = Binary.readVarInt(buffer);
+        this.identifier = Identifier.fromString(Binary.readString(buffer));
+        this.isBabyMob = buffer.readBoolean();
+        this.isGlobal = buffer.readBoolean();
     }
 
     @Override
-    public void encode() {
-        this.reset();
-        this.putUnsignedVarInt(this.sound);
-        this.putVector3f(this.x, this.y, this.z);
-        this.putVarInt(this.extraData);
-        this.putString(this.entityIdentifier);
-        this.putBoolean(this.isBabyMob);
-        this.putBoolean(this.isGlobal);
+    protected void encode(ByteBuf buffer) {
+        Binary.writeUnsignedVarInt(buffer, this.event);
+        Binary.writeVector3f(buffer, this.x, this.y, this.z);
+        Binary.writeVarInt(buffer, this.data);
+        Binary.writeString(buffer, this.identifier.toString());
+        buffer.writeBoolean(this.isBabyMob);
+        buffer.writeBoolean(this.isGlobal);
     }
 
     @Override
-    public byte pid() {
+    public short pid() {
         return NETWORK_ID;
     }
 }

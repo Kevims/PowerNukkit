@@ -1,9 +1,8 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemBlock;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 /**
  * Created on 2015/11/22 by CreeperFace.
@@ -11,17 +10,8 @@ import cn.nukkit.utils.BlockColor;
  */
 public class BlockDaylightDetector extends BlockTransparent {
 
-    public BlockDaylightDetector() {
-    }
-
-    @Override
-    public int getId() {
-        return DAYLIGHT_DETECTOR;
-    }
-
-    @Override
-    public String getName() {
-        return "Daylight Detector";
+    public BlockDaylightDetector(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -41,7 +31,7 @@ public class BlockDaylightDetector extends BlockTransparent {
 
     @Override
     public Item toItem() {
-        return new ItemBlock(this, 0);
+        return Item.get(id, meta);
     }
 
     //This function is a suggestion that can be renamed or deleted

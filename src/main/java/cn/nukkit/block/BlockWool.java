@@ -3,33 +3,16 @@ package cn.nukkit.block;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.utils.BlockColor;
 import cn.nukkit.utils.DyeColor;
+import cn.nukkit.utils.Identifier;
 
 /**
  * Created on 2015/12/2 by xtypr.
  * Package cn.nukkit.block in project Nukkit .
  */
-public class BlockWool extends BlockSolidMeta {
+public class BlockWool extends BlockSolid {
 
-    public BlockWool() {
-        this(0);
-    }
-
-    public BlockWool(int meta) {
-        super(meta);
-    }
-
-    public BlockWool(DyeColor dyeColor) {
-        this(dyeColor.getWoolData());
-    }
-
-    @Override
-    public String getName() {
-        return getDyeColor().getName() + " Wool";
-    }
-
-    @Override
-    public int getId() {
-        return WOOL;
+    public BlockWool(Identifier id) {
+        super(id);
     }
 
     @Override

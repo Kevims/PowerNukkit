@@ -1,25 +1,23 @@
 package cn.nukkit.item;
 
 
-import cn.nukkit.Player;
 import cn.nukkit.block.Block;
 import cn.nukkit.block.BlockBeehive;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.Sound;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.player.Player;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.FLOWING_WATER;
+import static cn.nukkit.block.BlockIds.WATER;
+import static cn.nukkit.item.ItemIds.POTION;
 
 public class ItemGlassBottle extends Item {
 
-    public ItemGlassBottle() {
-        this(0, 1);
-    }
-
-    public ItemGlassBottle(Integer meta) {
-        this(meta, 1);
-    }
-
-    public ItemGlassBottle(Integer meta, int count) {
-        super(GLASS_BOTTLE, meta, count, "Glass Bottle");
+    public ItemGlassBottle(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -28,10 +26,10 @@ public class ItemGlassBottle extends Item {
     }
 
     @Override
-    public boolean onActivate(Level level, Player player, Block block, Block target, BlockFace face, double fx, double fy, double fz) {
+    public boolean onActivate(Level level, Player player, Block block, Block target, BlockFace face, Vector3f clickPos) {
         Item filled = null;
-        if (target.getId() == WATER || target.getId() == STILL_WATER) {
-            filled = new ItemPotion();
+        if (target.getId() == WATER || target.getId() == FLOWING_WATER) {
+            filled = Item.get(POTION);
         } else if (target instanceof BlockBeehive && ((BlockBeehive) target).isFull()) {
             filled = Item.get(HONEY_BOTTLE);
             ((BlockBeehive) target).honeyCollected(player);
@@ -39,10 +37,10 @@ public class ItemGlassBottle extends Item {
         }
         
         if (filled != null) {
-            if (this.count == 1) {
+            if (this.getCount() == 1) {
                 player.getInventory().setItemInHand(filled);
-            } else if (this.count > 1) {
-                this.count--;
+            } else if (this.getCount() > 1) {
+                this.decrementCount();
                 player.getInventory().setItemInHand(this);
                 if (player.getInventory().canAddItem(filled)) {
                     player.getInventory().addItem(filled);

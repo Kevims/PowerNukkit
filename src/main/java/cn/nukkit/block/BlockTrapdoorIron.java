@@ -1,31 +1,18 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemTool;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 /**
  * Created by Pub4Game on 26.12.2015.
  */
 public class BlockTrapdoorIron extends BlockTrapdoor {
 
-    public BlockTrapdoorIron() {
-        this(0);
-    }
-
-    public BlockTrapdoorIron(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public int getId() {
-        return IRON_TRAPDOOR;
-    }
-
-    @Override
-    public String getName() {
-        return "Iron Trapdoor";
+    public BlockTrapdoorIron(Identifier id) {
+        super(id);
     }
 
     @Override

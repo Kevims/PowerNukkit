@@ -1,12 +1,14 @@
 package cn.nukkit.potion;
 
-import cn.nukkit.Player;
-import cn.nukkit.entity.Entity;
+import cn.nukkit.entity.impl.BaseEntity;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.entity.EntityDamageEvent.DamageCause;
 import cn.nukkit.event.entity.EntityRegainHealthEvent;
 import cn.nukkit.network.protocol.MobEffectPacket;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.ServerException;
+
+import static cn.nukkit.entity.data.EntityFlag.INVISIBLE;
 
 /**
  * author: MagicDroidX
@@ -202,7 +204,7 @@ public class Effect implements Cloneable {
         return false;
     }
 
-    public void applyEffect(Entity entity) {
+    public void applyEffect(BaseEntity entity) {
         switch (this.id) {
             case Effect.POISON: //POISON
                 if (entity.getHealth() > 1) {
@@ -228,7 +230,7 @@ public class Effect implements Cloneable {
         this.color = ((r & 0xff) << 16) + ((g & 0xff) << 8) + (b & 0xff);
     }
 
-    public void add(Entity entity) {
+    public void add(BaseEntity entity) {
         Effect oldEffect = entity.getEffect(getId());
         if (oldEffect != null && (Math.abs(this.getAmplifier()) < Math.abs(oldEffect.getAmplifier()) ||
                 Math.abs(this.getAmplifier()) == Math.abs(oldEffect.getAmplifier())
@@ -239,7 +241,7 @@ public class Effect implements Cloneable {
             Player player = (Player) entity;
 
             MobEffectPacket pk = new MobEffectPacket();
-            pk.eid = entity.getId();
+            pk.eid = entity.getUniqueId();
             pk.effectId = this.getId();
             pk.amplifier = this.getAmplifier();
             pk.particles = this.isVisible();
@@ -268,7 +270,7 @@ public class Effect implements Cloneable {
         }
 
         if (this.id == Effect.INVISIBILITY) {
-            entity.setDataFlag(Entity.DATA_FLAGS, Entity.DATA_FLAG_INVISIBLE, true);
+            entity.setFlag(INVISIBLE, true);
             entity.setNameTagVisible(false);
         }
 
@@ -278,10 +280,10 @@ public class Effect implements Cloneable {
         }
     }
 
-    public void remove(Entity entity) {
+    public void remove(BaseEntity entity) {
         if (entity instanceof Player) {
             MobEffectPacket pk = new MobEffectPacket();
-            pk.eid = entity.getId();
+            pk.eid = entity.getUniqueId();
             pk.effectId = this.getId();
             pk.eventId = MobEffectPacket.EVENT_REMOVE;
 
@@ -296,7 +298,7 @@ public class Effect implements Cloneable {
         }
 
         if (this.id == Effect.INVISIBILITY) {
-            entity.setDataFlag(Entity.DATA_FLAGS, Entity.DATA_FLAG_INVISIBLE, false);
+            entity.setFlag(INVISIBLE, false);
             entity.setNameTagVisible(true);
         }
 

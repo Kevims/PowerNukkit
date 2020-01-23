@@ -1,35 +1,22 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemBlock;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.Faceable;
+import cn.nukkit.utils.Identifier;
 
 /**
  * http://minecraft.gamepedia.com/End_Rod
  *
  * @author PikyCZ
  */
-public class BlockEndRod extends BlockTransparentMeta implements Faceable {
+public class BlockEndRod extends BlockTransparent implements Faceable {
 
-    public BlockEndRod() {
-        this(0);
-    }
-
-    public BlockEndRod(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public String getName() {
-        return "End Rod";
-    }
-
-    @Override
-    public int getId() {
-        return END_ROD;
+    public BlockEndRod(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -88,7 +75,7 @@ public class BlockEndRod extends BlockTransparentMeta implements Faceable {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         int[] faces = {0, 1, 3, 2, 5, 4};
         this.setDamage(faces[player != null ? face.getIndex() : 0]);
         this.getLevel().setBlock(block, this, true, true);
@@ -98,7 +85,7 @@ public class BlockEndRod extends BlockTransparentMeta implements Faceable {
 
     @Override
     public Item toItem() {
-        return new ItemBlock(this, 0);
+        return Item.get(id, 0);
     }
 
     @Override

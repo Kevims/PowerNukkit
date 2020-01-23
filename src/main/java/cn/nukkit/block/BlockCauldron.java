@@ -1,18 +1,23 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.blockentity.BlockEntity;
 import cn.nukkit.blockentity.BlockEntityCauldron;
 import cn.nukkit.event.player.PlayerBucketEmptyEvent;
 import cn.nukkit.event.player.PlayerBucketFillEvent;
-import cn.nukkit.item.*;
+import cn.nukkit.item.Item;
+import cn.nukkit.item.ItemBucket;
+import cn.nukkit.item.ItemIds;
+import cn.nukkit.item.ItemTool;
 import cn.nukkit.level.Sound;
 import cn.nukkit.level.particle.SmokeParticle;
 import cn.nukkit.math.BlockFace;
 import cn.nukkit.math.MathHelper;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.Tag;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.player.Player;
+import cn.nukkit.utils.Identifier;
 
 import java.util.Map;
 
@@ -20,23 +25,10 @@ import java.util.Map;
  * author: CreeperFace
  * Nukkit Project
  */
-public class BlockCauldron extends BlockSolidMeta {
+public class BlockCauldron extends BlockSolid {
 
-    public BlockCauldron() {
-        super(0);
-    }
-
-    public BlockCauldron(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public int getId() {
-        return CAULDRON_BLOCK;
-    }
-
-    public String getName() {
-        return "Cauldron Block";
+    public BlockCauldron(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -86,34 +78,35 @@ public class BlockCauldron extends BlockSolidMeta {
 
         BlockEntityCauldron cauldron = (BlockEntityCauldron) be;
 
-        switch (item.getId()) {
-            case Item.BUCKET:
-                if (item.getDamage() == 0) {//empty bucket
-                    if (!isFull() || cauldron.isCustomColor() || cauldron.hasPotion()) {
-                        break;
-                    }
+        Identifier itemType = item.getId();
 
-                    ItemBucket bucket = (ItemBucket) item.clone();
-                    bucket.setCount(1);
-                    bucket.setDamage(8);//water bucket
+        if (itemType == ItemIds.BUCKET) {
+            if (item.getDamage() == 0) {//empty bucket
+                if (!isFull() || cauldron.isCustomColor() || cauldron.hasPotion()) {
+                    return true;
+                }
 
-                    PlayerBucketFillEvent ev = new PlayerBucketFillEvent(player, this, null, this, item, bucket);
-                    this.level.getServer().getPluginManager().callEvent(ev);
-                    if (!ev.isCancelled()) {
-                        replaceBucket(item, player, ev.getItem());
-                        this.setFillLevel(0);//empty
-                        this.level.setBlock(this, this, true);
-                        cauldron.clearCustomColor();
-                        this.getLevel().addSound(this.add(0.5, 1, 0.5), Sound.CAULDRON_TAKEWATER);
-                    }
-                } else if (item.getDamage() == 8 || item.getDamage() == 10) {//water and lava buckets
-                    if (isFull() && !cauldron.isCustomColor() && !cauldron.hasPotion() && item.getDamage() == 8) {
-                        break;
-                    }
+                ItemBucket bucket = (ItemBucket) item.clone();
+                bucket.setCount(1);
+                bucket.setDamage(8);//water bucket
 
-                    ItemBucket bucket = (ItemBucket) item.clone();
-                    bucket.setCount(1);
-                    bucket.setDamage(0);//empty bucket
+                PlayerBucketFillEvent ev = new PlayerBucketFillEvent(player, this, null, this, item, bucket);
+                this.level.getServer().getPluginManager().callEvent(ev);
+                if (!ev.isCancelled()) {
+                    replaceBucket(item, player, ev.getItem());
+                    this.setFillLevel(0);//empty
+                    this.level.setBlock(this, this, true);
+                    cauldron.clearCustomColor();
+                    this.getLevel().addSound(this.add(0.5, 1, 0.5), Sound.CAULDRON_TAKEWATER);
+                }
+            } else if (item.getDamage() == 8 || item.getDamage() == 10) {//water and lava buckets
+                if (isFull() && !cauldron.isCustomColor() && !cauldron.hasPotion() && item.getDamage() == 8) {
+                    return true;
+                }
+
+                ItemBucket bucket = (ItemBucket) item.clone();
+                bucket.setCount(1);
+                bucket.setDamage(0);//empty bucket
 
                     PlayerBucketEmptyEvent ev = new PlayerBucketEmptyEvent(player, this, null, this, item, bucket);
                     this.level.getServer().getPluginManager().callEvent(ev);
@@ -222,10 +215,10 @@ public class BlockCauldron extends BlockSolidMeta {
                     break;
                 }
 
-                int meta = cauldron.hasPotion() ? cauldron.getPotionId() : 0;
+            int meta = cauldron.hasPotion() ? cauldron.getPotionId() : 0;
                 
                 Item potion;
-                if (meta == 0) {
+            if (meta == 0) {
                     potion = new ItemPotion();
                 } else {
                     switch (cauldron.getPotionType()) {
@@ -239,7 +232,7 @@ public class BlockCauldron extends BlockSolidMeta {
                         default:
                             potion = new ItemPotion(meta);
                             break;
-                    }
+                }
                 }
 
                 setFillLevel(getFillLevel() - 1);
@@ -265,16 +258,15 @@ public class BlockCauldron extends BlockSolidMeta {
                     }
                 }
 
-                this.level.addSound(this.add(0.5, 0.5, 0.5), Sound.CAULDRON_TAKEPOTION);
-                break;
-            default:
-                return true;
+            this.level.addSound(this.add(0.5, 0.5, 0.5), Sound.CAULDRON_TAKEPOTION);
+        } else {
+            return true;
         }
 
         this.level.updateComparatorOutputLevel(this);
         return true;
     }
-    
+
     protected void replaceBucket(Item oldBucket, Player player, Item newBucket) {
         if (player.isSurvival() || player.isAdventure()) {
             if (oldBucket.getCount() == 1) {
@@ -321,7 +313,7 @@ public class BlockCauldron extends BlockSolidMeta {
     }
     
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         CompoundTag nbt = new CompoundTag("")
                 .putString("id", BlockEntity.CAULDRON)
                 .putInt("x", (int) this.x)
@@ -345,7 +337,7 @@ public class BlockCauldron extends BlockSolidMeta {
     @Override
     public Item[] getDrops(Item item) {
         if (item.getTier() >= ItemTool.TIER_WOODEN) {
-            return new Item[]{new ItemCauldron()};
+            return new Item[]{Item.get(ItemIds.CAULDRON)};
         }
 
         return new Item[0];
@@ -353,7 +345,7 @@ public class BlockCauldron extends BlockSolidMeta {
 
     @Override
     public Item toItem() {
-        return new ItemCauldron();
+        return Item.get(ItemIds.CAULDRON);
     }
 
     public boolean hasComparatorInputOverride() {

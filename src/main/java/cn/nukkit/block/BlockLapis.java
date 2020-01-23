@@ -3,6 +3,7 @@ package cn.nukkit.block;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 /**
  * author: Angelic47
@@ -10,18 +11,8 @@ import cn.nukkit.utils.BlockColor;
  */
 public class BlockLapis extends BlockSolid {
 
-
-    public BlockLapis() {
-    }
-
-    @Override
-    public int getId() {
-        return LAPIS_BLOCK;
-    }
-
-    @Override
-    public String getName() {
-        return "Lapis Lazuli Block";
+    public BlockLapis(Identifier id) {
+        super(id);
     }
 
     @Override

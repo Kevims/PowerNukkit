@@ -4,15 +4,18 @@ import cn.nukkit.Player;
 import cn.nukkit.block.Block;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.enchantment.Enchantment;
-import cn.nukkit.level.Position;
+import cn.nukkit.level.BlockPosition;
 import cn.nukkit.nbt.tag.CompoundTag;
 import io.netty.util.internal.StringUtil;
+import cn.nukkit.player.Player;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Stream;
+
+import static cn.nukkit.block.BlockIds.AIR;
 
 /**
  * author: MagicDroidX
@@ -29,7 +32,7 @@ public class AnvilInventory extends FakeBlockUIComponent {
     private int levelCost;
     private String newItemName;
 
-    public AnvilInventory(PlayerUIInventory playerUI, Position position) {
+    public AnvilInventory(PlayerUIInventory playerUI, BlockPosition position) {
         super(playerUI, InventoryType.ANVIL, OFFSET, position);
     }
     

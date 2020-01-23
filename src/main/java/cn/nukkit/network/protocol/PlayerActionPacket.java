@@ -1,6 +1,8 @@
 package cn.nukkit.network.protocol;
 
-import cn.nukkit.math.BlockVector3;
+import cn.nukkit.math.Vector3i;
+import cn.nukkit.utils.Binary;
+import io.netty.buffer.ByteBuf;
 import lombok.ToString;
 
 /**
@@ -9,7 +11,7 @@ import lombok.ToString;
 @ToString
 public class PlayerActionPacket extends DataPacket {
 
-    public static final byte NETWORK_ID = ProtocolInfo.PLAYER_ACTION_PACKET;
+    public static final short NETWORK_ID = ProtocolInfo.PLAYER_ACTION_PACKET;
 
     public static final int ACTION_START_BREAK = 0;
     public static final int ACTION_ABORT_BREAK = 1;
@@ -37,7 +39,7 @@ public class PlayerActionPacket extends DataPacket {
     public static final int ACTION_STOP_SPIN_ATTACK = 24;
     public static final int ACTION_INTERACT_BLOCK = 25;
 
-    public long entityId;
+    public long entityRuntimeId;
     public int action;
     public int x;
     public int y;
@@ -46,27 +48,26 @@ public class PlayerActionPacket extends DataPacket {
 
 
     @Override
-    public void decode() {
-        this.entityId = this.getEntityRuntimeId();
-        this.action = this.getVarInt();
-        BlockVector3 v = this.getBlockVector3();
+    protected void decode(ByteBuf buffer) {
+        this.entityRuntimeId = Binary.readEntityRuntimeId(buffer);
+        this.action = Binary.readVarInt(buffer);
+        Vector3i v = Binary.readBlockVector3(buffer);
         this.x = v.x;
         this.y = v.y;
         this.z = v.z;
-        this.face = this.getVarInt();
+        this.face = Binary.readVarInt(buffer);
     }
 
     @Override
-    public void encode() {
-        this.reset();
-        this.putEntityRuntimeId(this.entityId);
-        this.putVarInt(this.action);
-        this.putBlockVector3(this.x, this.y, this.z);
-        this.putVarInt(this.face);
+    protected void encode(ByteBuf buffer) {
+        Binary.writeEntityRuntimeId(buffer, this.entityRuntimeId);
+        Binary.writeVarInt(buffer, this.action);
+        Binary.writeBlockVector3(buffer, this.x, this.y, this.z);
+        Binary.writeVarInt(buffer, this.face);
     }
 
     @Override
-    public byte pid() {
+    public short pid() {
         return NETWORK_ID;
     }
 

@@ -1,37 +1,27 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.level.Level;
 import cn.nukkit.math.AxisAlignedBB;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
 import cn.nukkit.utils.Faceable;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.LADDER;
 
 /**
  * Created on 2015/12/8 by xtypr.
  * Package cn.nukkit.block in project Nukkit .
  */
-public class BlockLadder extends BlockTransparentMeta implements Faceable {
+public class BlockLadder extends BlockTransparent implements Faceable {
 
-    public BlockLadder() {
-        this(0);
-    }
-
-    public BlockLadder(int meta) {
-        super(meta);
+    public BlockLadder(Identifier id) {
+        super(id);
         calculateOffsets();
-    }
-
-    @Override
-    public String getName() {
-        return "Ladder";
-    }
-
-    @Override
-    public int getId() {
-        return LADDER;
     }
 
     @Override
@@ -138,7 +128,7 @@ public class BlockLadder extends BlockTransparentMeta implements Faceable {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         if (!target.isTransparent()) {
             if (face.getIndex() >= 2 && face.getIndex() <= 5) {
                 this.setDamage(face.getIndex());
@@ -181,7 +171,7 @@ public class BlockLadder extends BlockTransparentMeta implements Faceable {
     @Override
     public Item[] getDrops(Item item) {
         return new Item[]{
-            Item.get(Item.LADDER, 0, 1)
+                Item.get(LADDER, 0, 1)
         };
     }
 

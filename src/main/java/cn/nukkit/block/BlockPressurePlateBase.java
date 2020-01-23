@@ -1,6 +1,5 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.event.Event;
 import cn.nukkit.event.block.BlockRedstoneEvent;
@@ -8,28 +7,28 @@ import cn.nukkit.event.entity.EntityInteractEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.player.PlayerInteractEvent.Action;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemBlock;
 import cn.nukkit.level.Level;
-import cn.nukkit.level.Sound;
 import cn.nukkit.math.AxisAlignedBB;
 import cn.nukkit.math.BlockFace;
 import cn.nukkit.math.SimpleAxisAlignedBB;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.network.protocol.LevelSoundEventPacket;
+import cn.nukkit.player.Player;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.AIR;
 
 /**
  * Created by Snake1999 on 2016/1/11.
  * Package cn.nukkit.block in project nukkit
  */
-public abstract class BlockPressurePlateBase extends BlockFlowable {
+public abstract class BlockPressurePlateBase extends FloodableBlock {
 
     protected float onPitch;
     protected float offPitch;
 
-    protected BlockPressurePlateBase() {
-        this(0);
-    }
-
-    protected BlockPressurePlateBase(int meta) {
-        super(meta);
+    protected BlockPressurePlateBase(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -104,7 +103,7 @@ public abstract class BlockPressurePlateBase extends BlockFlowable {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         if (block.down().isTransparent()) {
             return false;
         }
@@ -149,7 +148,7 @@ public abstract class BlockPressurePlateBase extends BlockFlowable {
             this.level.setBlock(this, this, false, false);
 
             this.level.updateAroundRedstone(this, null);
-            this.level.updateAroundRedstone(this.getLocation().down(), null);
+            this.level.updateAroundRedstone(this.asVector3i().down(), null);
 
             if (!isPowered && wasPowered) {
                 this.playOffSound();
@@ -167,11 +166,11 @@ public abstract class BlockPressurePlateBase extends BlockFlowable {
 
     @Override
     public boolean onBreak(Item item) {
-        this.level.setBlock(this, new BlockAir(), true, true);
+        this.level.setBlock(this, Block.get(AIR), true, true);
 
         if (this.getRedstonePower() > 0) {
             this.level.updateAroundRedstone(this, null);
-            this.level.updateAroundRedstone(this.getLocation().down(), null);
+            this.level.updateAroundRedstone(this.asVector3i().down(), null);
         }
 
         return true;
@@ -196,17 +195,17 @@ public abstract class BlockPressurePlateBase extends BlockFlowable {
     }
 
     protected void playOnSound() {
-        this.level.addSound(this, Sound.RANDOM_CLICK, 0.6f, onPitch);
+        this.level.addLevelSoundEvent(this, LevelSoundEventPacket.SOUND_POWER_ON);
     }
 
     protected void playOffSound() {
-        this.level.addSound(this, Sound.RANDOM_CLICK, 0.6f, offPitch);
+        this.level.addLevelSoundEvent(this, LevelSoundEventPacket.SOUND_POWER_OFF);
     }
 
     protected abstract int computeRedstoneStrength();
 
     @Override
     public Item toItem() {
-        return new ItemBlock(this, 0, 1);
+        return Item.get(AIR, 0, 0);
     }
 }

@@ -1,13 +1,14 @@
 package cn.nukkit.utils;
 
-import cn.nukkit.Player;
 import cn.nukkit.entity.Attribute;
-import cn.nukkit.entity.Entity;
-import cn.nukkit.entity.data.EntityMetadata;
-import cn.nukkit.entity.mob.EntityCreeper;
+import cn.nukkit.entity.EntityTypes;
+import cn.nukkit.entity.data.EntityDataMap;
 import cn.nukkit.network.protocol.*;
+import cn.nukkit.player.Player;
 
 import java.util.concurrent.ThreadLocalRandom;
+
+import static cn.nukkit.entity.data.EntityData.*;
 
 /**
  * DummyBossBar
@@ -127,7 +128,7 @@ public class DummyBossBar {
 
     private void createBossEntity() {
         AddEntityPacket pkAdd = new AddEntityPacket();
-        pkAdd.type = EntityCreeper.NETWORK_ID;
+        pkAdd.type = EntityTypes.CREEPER.getIdentifier();
         pkAdd.entityUniqueId = bossBarId;
         pkAdd.entityRuntimeId = bossBarId;
         pkAdd.x = (float) player.x;
@@ -136,21 +137,21 @@ public class DummyBossBar {
         pkAdd.speedX = 0;
         pkAdd.speedY = 0;
         pkAdd.speedZ = 0;
-        pkAdd.metadata = new EntityMetadata()
+        pkAdd.dataMap = new EntityDataMap()
                 // Default Metadata tags
-                .putLong(Entity.DATA_FLAGS, 0)
-                .putShort(Entity.DATA_AIR, 400)
-                .putShort(Entity.DATA_MAX_AIR, 400)
-                .putLong(Entity.DATA_LEAD_HOLDER_EID, -1)
-                .putString(Entity.DATA_NAMETAG, text) // Set the entity name
-                .putFloat(Entity.DATA_SCALE, 0); // And make it invisible
+                .putLong(FLAGS, 0)
+                .putShort(AIR, 400)
+                .putShort(MAX_AIR, 400)
+                .putLong(LEAD_HOLDER_EID, -1)
+                .putString(NAMETAG, text) // Set the entity name
+                .putFloat(SCALE, 0); // And make it invisible
 
         player.dataPacket(pkAdd);
     }
 
     private void sendAttributes() {
         UpdateAttributesPacket pkAttributes = new UpdateAttributesPacket();
-        pkAttributes.entityId = bossBarId;
+        pkAttributes.entityRuntimeId = bossBarId;
         Attribute attr = Attribute.getAttribute(Attribute.MAX_HEALTH);
         attr.setMaxValue(100); // Max value - We need to change the max value first, or else the "setValue" will return a IllegalArgumentException
         attr.setValue(length); // Entity health
@@ -217,14 +218,14 @@ public class DummyBossBar {
 
     private void updateBossEntityNameTag() {
         SetEntityDataPacket pk = new SetEntityDataPacket();
-        pk.eid = this.bossBarId;
-        pk.metadata = new EntityMetadata().putString(Entity.DATA_NAMETAG, this.text);
+        pk.entityRuntimeId = this.bossBarId;
+        pk.dataMap.putString(NAMETAG, this.text);
         player.dataPacket(pk);
     }
 
     private void removeBossEntity() {
         RemoveEntityPacket pkRemove = new RemoveEntityPacket();
-        pkRemove.eid = bossBarId;
+        pkRemove.entityUniqueId = bossBarId;
         player.dataPacket(pkRemove);
     }
 

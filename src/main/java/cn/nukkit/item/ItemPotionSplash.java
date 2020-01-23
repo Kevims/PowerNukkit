@@ -1,6 +1,9 @@
 package cn.nukkit.item;
 
+import cn.nukkit.entity.EntityType;
+import cn.nukkit.entity.EntityTypes;
 import cn.nukkit.nbt.tag.CompoundTag;
+import cn.nukkit.utils.Identifier;
 
 /**
  * Created on 2015/12/27 by xtypr.
@@ -8,12 +11,8 @@ import cn.nukkit.nbt.tag.CompoundTag;
  */
 public class ItemPotionSplash extends ProjectileItem {
 
-    public ItemPotionSplash(Integer meta) {
-        this(meta, 1);
-    }
-
-    public ItemPotionSplash(Integer meta, int count) {
-        super(SPLASH_POTION, meta, count, "Splash Potion");
+    public ItemPotionSplash(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -27,8 +26,8 @@ public class ItemPotionSplash extends ProjectileItem {
     }
 
     @Override
-    public String getProjectileEntityType() {
-        return "ThrownPotion";
+    public EntityType<?> getProjectileEntityType() {
+        return EntityTypes.SPLASH_POTION;
     }
 
     @Override
@@ -38,6 +37,6 @@ public class ItemPotionSplash extends ProjectileItem {
 
     @Override
     protected void correctNBT(CompoundTag nbt) {
-        nbt.putInt("PotionId", this.meta);
+        nbt.putInt("PotionId", this.getDamage());
     }
 }

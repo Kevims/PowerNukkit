@@ -4,23 +4,15 @@ import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.utils.BlockColor;
 import cn.nukkit.utils.DyeColor;
+import cn.nukkit.utils.Identifier;
 
 /**
  * Created by CreeperFace on 2.6.2017.
  */
-public class BlockConcrete extends BlockSolidMeta {
+public class BlockConcrete extends BlockSolid {
 
-    public BlockConcrete() {
-        this(0);
-    }
-
-    public BlockConcrete(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public int getId() {
-        return CONCRETE;
+    public BlockConcrete(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -31,11 +23,6 @@ public class BlockConcrete extends BlockSolidMeta {
     @Override
     public double getHardness() {
         return 1.8;
-    }
-
-    @Override
-    public String getName() {
-        return "Concrete";
     }
 
     @Override

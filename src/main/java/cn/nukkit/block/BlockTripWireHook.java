@@ -1,35 +1,24 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.event.block.BlockRedstoneEvent;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemBlock;
 import cn.nukkit.level.Level;
 import cn.nukkit.math.BlockFace;
-import cn.nukkit.math.Vector3;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.math.Vector3i;
 import cn.nukkit.network.protocol.LevelSoundEventPacket;
+import cn.nukkit.player.Player;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.*;
 
 /**
  * @author CreeperFace
  */
-public class BlockTripWireHook extends BlockFlowable {
+public class BlockTripWireHook extends FloodableBlock {
 
-    public BlockTripWireHook() {
-        this(0);
-    }
-
-    public BlockTripWireHook(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public String getName() {
-        return "Tripwire Hook";
-    }
-
-    @Override
-    public int getId() {
-        return TRIPWIRE_HOOK;
+    public BlockTripWireHook(Identifier id) {
+        super(id);
     }
 
     public BlockFace getFacing() {
@@ -53,7 +42,7 @@ public class BlockTripWireHook extends BlockFlowable {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         if (!this.getSide(face.getOpposite()).isNormalBlock() || face == BlockFace.DOWN || face == BlockFace.UP) {
             return false;
         }
@@ -82,7 +71,7 @@ public class BlockTripWireHook extends BlockFlowable {
 
         if (powered) {
             this.level.updateAroundRedstone(this, null);
-            this.level.updateAroundRedstone(this.getLocation().getSide(getFacing().getOpposite()), null);
+            this.level.updateAroundRedstone(this.asVector3i().getSide(getFacing().getOpposite()), null);
         }
 
         return true;
@@ -90,7 +79,7 @@ public class BlockTripWireHook extends BlockFlowable {
 
     public void calculateState(boolean onBreak, boolean updateAround, int pos, Block block) {
         BlockFace facing = getFacing();
-        Vector3 v = this.getLocation();
+        Vector3i v = this.asVector3i();
         boolean attached = isAttached();
         boolean powered = isPowered();
         boolean canConnect = !onBreak;
@@ -99,7 +88,7 @@ public class BlockTripWireHook extends BlockFlowable {
         Block[] blocks = new Block[42];
 
         for (int i = 1; i < 42; ++i) {
-            Vector3 vector = v.getSide(facing, i);
+            Vector3i vector = v.getSide(facing, i);
             Block b = this.level.getBlock(vector);
 
             if (b instanceof BlockTripWireHook) {
@@ -109,7 +98,7 @@ public class BlockTripWireHook extends BlockFlowable {
                 break;
             }
 
-            if (b.getId() != Block.TRIPWIRE && i != pos) {
+            if (b.getId() != TRIPWIRE && i != pos) {
                 blocks[i] = null;
                 canConnect = false;
             } else {
@@ -133,22 +122,22 @@ public class BlockTripWireHook extends BlockFlowable {
 
         canConnect = canConnect & distance > 1;
         nextPowered = nextPowered & canConnect;
-        BlockTripWireHook hook = new BlockTripWireHook();
+        BlockTripWireHook hook = (BlockTripWireHook) Block.get(TRIPWIRE_HOOK);
         hook.setAttached(canConnect);
         hook.setPowered(nextPowered);
 
 
         if (distance > 0) {
-            Vector3 vec = v.getSide(facing, distance);
+            Vector3i vec = v.getSide(facing, distance);
             BlockFace face = facing.getOpposite();
             hook.setFace(face);
             this.level.setBlock(vec, hook, true, false);
             this.level.updateAroundRedstone(vec, null);
             this.level.updateAroundRedstone(vec.getSide(face.getOpposite()), null);
-            this.addSound(vec, canConnect, nextPowered, attached, powered);
+            this.addSound(vec.asVector3f(), canConnect, nextPowered, attached, powered);
         }
 
-        this.addSound(v, canConnect, nextPowered, attached, powered);
+        this.addSound(v.asVector3f(), canConnect, nextPowered, attached, powered);
 
         if (!onBreak) {
             hook.setFace(facing);
@@ -162,10 +151,10 @@ public class BlockTripWireHook extends BlockFlowable {
 
         if (attached != canConnect) {
             for (int i = 1; i < distance; i++) {
-                Vector3 vc = v.getSide(facing, i);
+                Vector3i vc = v.getSide(facing, i);
                 block = blocks[i];
 
-                if (block != null && this.level.getBlockIdAt(vc.getFloorX(), vc.getFloorY(), vc.getFloorZ()) != Block.AIR) {
+                if (block != null && this.level.getBlockIdAt(vc.getX(), vc.getY(), vc.getZ()) != AIR) {
                     if (canConnect ^ ((block.getDamage() & 0x04) > 0)) {
                         block.setDamage(block.getDamage() ^ 0x04);
                     }
@@ -176,7 +165,7 @@ public class BlockTripWireHook extends BlockFlowable {
         }
     }
 
-    private void addSound(Vector3 pos, boolean canConnect, boolean nextPowered, boolean attached, boolean powered) {
+    private void addSound(Vector3f pos, boolean canConnect, boolean nextPowered, boolean attached, boolean powered) {
         if (nextPowered && !powered) {
             this.level.addLevelSoundEvent(pos, LevelSoundEventPacket.SOUND_POWER_ON);
             this.level.getServer().getPluginManager().callEvent(new BlockRedstoneEvent(this, 0, 15));
@@ -242,6 +231,6 @@ public class BlockTripWireHook extends BlockFlowable {
 
     @Override
     public Item toItem() {
-        return new ItemBlock(this, 0);
+        return Item.get(id, 0);
     }
 }

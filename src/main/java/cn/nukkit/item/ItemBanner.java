@@ -1,29 +1,27 @@
 package cn.nukkit.item;
 
 import cn.nukkit.block.Block;
+import cn.nukkit.block.BlockIds;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.IntTag;
 import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.utils.BannerPattern;
 import cn.nukkit.utils.DyeColor;
+import cn.nukkit.utils.Identifier;
 
 /**
  * Created by PetteriM1
  */
 public class ItemBanner extends Item {
 
-    public ItemBanner() {
-        this(0);
-    }
-
-    public ItemBanner(Integer meta) {
-        this(meta, 1);
-    }
-
-    public ItemBanner(Integer meta, int count) {
-        super(BANNER, meta, count, "Banner");
-        this.block = Block.get(Block.STANDING_BANNER);
+    public ItemBanner(Identifier id) {
+        super(id);
         this.correctNBT();
+    }
+
+    @Override
+    public Block getBlock() {
+        return Block.get(BlockIds.STANDING_BANNER);
     }
 
     @Override
@@ -70,7 +68,7 @@ public class ItemBanner extends Item {
     public void removePattern(int index) {
         CompoundTag tag = this.hasCompoundTag() ? this.getNamedTag() : new CompoundTag();
         ListTag<CompoundTag> patterns = tag.getList("Patterns", CompoundTag.class);
-        if(patterns.size() > index && index >= 0) {
+        if (patterns.size() > index && index >= 0) {
             patterns.remove(index);
         }
         this.setNamedTag(tag);
@@ -83,7 +81,7 @@ public class ItemBanner extends Item {
     public void correctNBT() {
         CompoundTag tag = this.getNamedTag() != null ? this.getNamedTag() : new CompoundTag();
         if (!tag.contains("Base") || !(tag.get("Base") instanceof IntTag)) {
-            tag.putInt("Base", this.meta);
+            tag.putInt("Base", this.getDamage());
         }
 
         this.setNamedTag(tag);

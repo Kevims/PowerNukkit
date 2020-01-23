@@ -1,11 +1,11 @@
 package cn.nukkit.event.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.block.Block;
 import cn.nukkit.event.Cancellable;
 import cn.nukkit.event.HandlerList;
 import cn.nukkit.item.Item;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.player.Player;
 
 /**
  * author: MagicDroidX
@@ -77,9 +77,13 @@ public class BlockBreakEvent extends BlockEvent implements Cancellable {
         this.blockDrops = drops;
     }
 
-    public int getDropExp() { return this.blockXP; }
+    public int getDropExp() {
+        return this.blockXP;
+    }
 
-    public void setDropExp(int xp) { this.blockXP = xp; }
+    public void setDropExp(int xp) {
+        this.blockXP = xp;
+    }
 
     public void setInstaBreak(boolean instaBreak) {
         this.instaBreak = instaBreak;

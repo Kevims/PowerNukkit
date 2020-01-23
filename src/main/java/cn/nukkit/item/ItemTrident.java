@@ -1,41 +1,35 @@
 package cn.nukkit.item;
 
-import cn.nukkit.Player;
 import cn.nukkit.Server;
-import cn.nukkit.entity.Entity;
-import cn.nukkit.entity.projectile.EntityProjectile;
-import cn.nukkit.entity.projectile.EntityThrownTrident;
+import cn.nukkit.entity.EntityTypes;
+import cn.nukkit.entity.impl.projectile.EntityProjectile;
+import cn.nukkit.entity.projectile.ThrownTrident;
 import cn.nukkit.event.entity.EntityShootBowEvent;
 import cn.nukkit.event.entity.ProjectileLaunchEvent;
-import cn.nukkit.math.Vector3;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.DoubleTag;
 import cn.nukkit.nbt.tag.FloatTag;
 import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.network.protocol.LevelSoundEventPacket;
+import cn.nukkit.player.Player;
+import cn.nukkit.registry.EntityRegistry;
+import cn.nukkit.utils.Identifier;
 
 /**
  * Created by PetteriM1
  */
 public class ItemTrident extends ItemTool {
 
-    public ItemTrident() {
-        this(0, 1);
-    }
-
-    public ItemTrident(Integer meta) {
-        this(meta, 1);
-    }
-
-    public ItemTrident(Integer meta, int count) {
-        super(TRIDENT, meta, count, "Trident");
+    public ItemTrident(Identifier id) {
+        super(id);
     }
 
     @Override
     public int getMaxDurability() {
         return ItemTool.DURABILITY_TRIDENT;
     }
-    
+
     @Override
     public boolean isSword() {
         return true;
@@ -47,7 +41,7 @@ public class ItemTrident extends ItemTool {
     }
 
     @Override
-    public boolean onClickAir(Player player, Vector3 directionVector) {
+    public boolean onClickAir(Player player, Vector3f directionVector) {
         return true;
     }
 
@@ -71,13 +65,10 @@ public class ItemTrident extends ItemTool {
         double p = (double) ticksUsed / 20;
 
         double f = Math.min((p * p + p * 2) / 3, 1) * 2;
-        EntityThrownTrident trident = (EntityThrownTrident) Entity.createEntity("ThrownTrident", player.chunk, nbt, player, f == 2);
-
-        if (trident == null) {
-            return false;
-        }
-
-        trident.setItem(this);
+        ThrownTrident trident = EntityRegistry.get().newEntity(EntityTypes.THROWN_TRIDENT, player.chunk, nbt);
+        trident.setShooter(player);
+        trident.setCritical(f == 2);
+        trident.setTrident(this);
 
         EntityShootBowEvent entityShootBowEvent = new EntityShootBowEvent(player, this, trident, f);
 
@@ -99,7 +90,7 @@ public class ItemTrident extends ItemTool {
                     entityShootBowEvent.getProjectile().spawnToAll();
                     player.getLevel().addLevelSoundEvent(player, LevelSoundEventPacket.SOUND_ITEM_TRIDENT_THROW);
                     if (!player.isCreative()) {
-                        this.count--;
+                        this.decrementCount();
                         player.getInventory().setItemInHand(this);
                     }
                 }

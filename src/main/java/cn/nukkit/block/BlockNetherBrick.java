@@ -3,6 +3,7 @@ package cn.nukkit.block;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 /**
  * Created on 2015/12/7 by xtypr.
@@ -10,17 +11,8 @@ import cn.nukkit.utils.BlockColor;
  */
 public class BlockNetherBrick extends BlockSolid {
 
-    public BlockNetherBrick() {
-    }
-
-    @Override
-    public String getName() {
-        return "Nether Bricks";
-    }
-
-    @Override
-    public int getId() {
-        return NETHER_BRICKS;
+    public BlockNetherBrick(Identifier id) {
+        super(id);
     }
 
     @Override

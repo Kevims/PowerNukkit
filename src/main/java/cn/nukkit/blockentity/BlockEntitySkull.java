@@ -1,7 +1,7 @@
 package cn.nukkit.blockentity;
 
-import cn.nukkit.block.Block;
-import cn.nukkit.level.format.FullChunk;
+import cn.nukkit.block.BlockIds;
+import cn.nukkit.level.chunk.Chunk;
 import cn.nukkit.nbt.tag.CompoundTag;
 
 /**
@@ -9,7 +9,7 @@ import cn.nukkit.nbt.tag.CompoundTag;
  * Package cn.nukkit.blockentity in project Nukkit.
  */
 public class BlockEntitySkull extends BlockEntitySpawnable {
-    public BlockEntitySkull(FullChunk chunk, CompoundTag nbt) {
+    public BlockEntitySkull(Chunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
     }
 
@@ -33,7 +33,7 @@ public class BlockEntitySkull extends BlockEntitySpawnable {
 
     @Override
     public boolean isBlockEntityValid() {
-        return getBlock().getId() == Block.SKULL_BLOCK;
+        return getBlock().getId() == BlockIds.SKULL;
     }
 
     @Override

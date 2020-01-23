@@ -1,13 +1,18 @@
 package cn.nukkit.block;
 
 import cn.nukkit.entity.Entity;
-import cn.nukkit.entity.Entity;
-import cn.nukkit.entity.item.EntityFallingBlock;
+import cn.nukkit.entity.EntityTypes;
+import cn.nukkit.entity.misc.FallingBlock;
 import cn.nukkit.level.Level;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.DoubleTag;
 import cn.nukkit.nbt.tag.FloatTag;
 import cn.nukkit.nbt.tag.ListTag;
+import cn.nukkit.registry.BlockRegistry;
+import cn.nukkit.registry.EntityRegistry;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.AIR;
 import cn.nukkit.nbt.tag.Tag;
 
 
@@ -17,15 +22,16 @@ import cn.nukkit.nbt.tag.Tag;
  */
 public abstract class BlockFallable extends BlockSolid {
 
-    protected BlockFallable() {
+    public BlockFallable(Identifier id) {
+        super(id);
     }
 
     public int onUpdate(int type) {
         if (type == Level.BLOCK_UPDATE_NORMAL) {
             Block down = this.down();
             if (down.getId() == AIR || down instanceof BlockLiquid || down.getLevelBlockAtLayer(1) instanceof BlockLiquid) {
-                this.level.setBlock(this, Block.get(Block.AIR), true, true);
-                EntityFallingBlock fall = createFallingEntity(new CompoundTag());
+                this.level.setBlock(this, Block.get(AIR), true, true);
+                FallingBlock fall = createFallingEntity(new CompoundTag());
 
                 fall.spawnToAll();
             }
@@ -33,7 +39,7 @@ public abstract class BlockFallable extends BlockSolid {
         return type;
     }
 
-    protected EntityFallingBlock createFallingEntity(CompoundTag customNbt) {
+    protected FallingBlock createFallingEntity(CompoundTag customNbt) {
         CompoundTag nbt = new CompoundTag()
                 .putList(new ListTag<DoubleTag>("Pos")
                         .add(new DoubleTag("", this.x + 0.5))
@@ -47,14 +53,15 @@ public abstract class BlockFallable extends BlockSolid {
                 .putList(new ListTag<FloatTag>("Rotation")
                         .add(new FloatTag("", 0))
                         .add(new FloatTag("", 0)))
-                .putInt("TileID", this.getId())
+                .putInt("TileID", BlockRegistry.get().getLegacyId(this.getId()))
                 .putByte("Data", this.getDamage());
 
         for (Tag customTag : customNbt.getAllTags()) {
             nbt.put(customTag.getName(), customTag.copy());
         }
 
-        EntityFallingBlock fall = (EntityFallingBlock) Entity.createEntity("FallingSand", this.getLevel().getChunk((int) this.x >> 4, (int) this.z >> 4), nbt);
+        FallingBlock fall = EntityRegistry.get().newEntity(EntityTypes.FALLING_BLOCK,
+                this.getLevel().getChunk(this.getChunkX(), this.getChunkZ()), nbt);
 
         if (fall != null) {
             fall.spawnToAll();

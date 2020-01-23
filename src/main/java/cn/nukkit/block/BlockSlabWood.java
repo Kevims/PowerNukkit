@@ -1,9 +1,11 @@
 package cn.nukkit.block;
 
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemBlock;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.DOUBLE_WOODEN_SLAB;
 
 /**
  * Created on 2015/12/2 by xtypr.
@@ -11,32 +13,8 @@ import cn.nukkit.utils.BlockColor;
  */
 public class BlockSlabWood extends BlockSlab {
 
-    public BlockSlabWood() {
-        this(0);
-    }
-
-    public BlockSlabWood(int meta) {
-        super(meta, DOUBLE_WOODEN_SLAB);
-    }
-
-    @Override
-    public String getName() {
-        String[] names = new String[]{
-                "Oak",
-                "Spruce",
-                "Birch",
-                "Jungle",
-                "Acacia",
-                "Dark Oak",
-                "",
-                ""
-        };
-        return (((this.getDamage() & 0x08) == 0x08) ? "Upper " : "") + names[this.getDamage() & 0x07] + " Wooden Slab";
-    }
-
-    @Override
-    public int getId() {
-        return WOOD_SLAB;
+    public BlockSlabWood(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -63,12 +41,12 @@ public class BlockSlabWood extends BlockSlab {
 
     @Override
     public Item toItem() {
-        return new ItemBlock(this, this.getDamage() & 0x07);
+        return Item.get(id, this.getDamage() & 0x07);
     }
 
     @Override
     public BlockColor getColor() {
-        switch(getDamage() & 0x07){
+        switch (getDamage() & 0x07) {
             default:
             case 0: //OAK
                 return BlockColor.WOOD_BLOCK_COLOR;
@@ -83,5 +61,10 @@ public class BlockSlabWood extends BlockSlab {
             case 5: //DARK OAK
                 return BlockColor.BROWN_BLOCK_COLOR;
         }
+    }
+
+    @Override
+    protected Identifier getDoubleSlab() {
+        return DOUBLE_WOODEN_SLAB;
     }
 }

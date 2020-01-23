@@ -1,10 +1,11 @@
 package cn.nukkit.item;
 
-import cn.nukkit.Player;
-import cn.nukkit.math.Vector3;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.nbt.tag.ByteTag;
 import cn.nukkit.nbt.tag.Tag;
 import cn.nukkit.network.protocol.LevelSoundEventPacket;
+import cn.nukkit.player.Player;
+import cn.nukkit.utils.Identifier;
 
 /**
  * author: MagicDroidX
@@ -19,20 +20,8 @@ abstract public class ItemArmor extends Item implements ItemDurable {
     public static final int TIER_DIAMOND = 5;
     public static final int TIER_OTHER = 6;
 
-    public ItemArmor(int id) {
+    public ItemArmor(Identifier id) {
         super(id);
-    }
-
-    public ItemArmor(int id, Integer meta) {
-        super(id, meta);
-    }
-
-    public ItemArmor(int id, Integer meta, int count) {
-        super(id, meta, count);
-    }
-
-    public ItemArmor(int id, Integer meta, int count, String name) {
-        super(id, meta, count, name);
     }
 
     @Override
@@ -46,7 +35,7 @@ abstract public class ItemArmor extends Item implements ItemDurable {
     }
 
     @Override
-    public boolean onClickAir(Player player, Vector3 directionVector) {
+    public boolean onClickAir(Player player, Vector3f directionVector) {
         boolean equip = false;
         if (this.isHelmet() && player.getInventory().getHelmet().isNull()) {
             if (player.getInventory().setHelmet(this)) {

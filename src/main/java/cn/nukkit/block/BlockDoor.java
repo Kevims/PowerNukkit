@@ -1,6 +1,5 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.event.block.BlockRedstoneEvent;
 import cn.nukkit.event.block.DoorToggleEvent;
 import cn.nukkit.item.Item;
@@ -9,21 +8,26 @@ import cn.nukkit.level.Sound;
 import cn.nukkit.math.AxisAlignedBB;
 import cn.nukkit.math.BlockFace;
 import cn.nukkit.math.SimpleAxisAlignedBB;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.Faceable;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.AIR;
 
 /**
  * author: MagicDroidX
  * Nukkit Project
  */
-public abstract class BlockDoor extends BlockTransparentMeta implements Faceable {
+public abstract class BlockDoor extends BlockTransparent implements Faceable {
 
     public static int DOOR_OPEN_BIT = 0x04;
     public static int DOOR_TOP_BIT = 0x08;
     public static int DOOR_HINGE_BIT = 0x01;
     public static int DOOR_POWERED_BIT = 0x02;
 
-    protected BlockDoor(int meta) {
-        super(meta);
+    public BlockDoor(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -39,17 +43,6 @@ public abstract class BlockDoor extends BlockTransparentMeta implements Faceable
     @Override
     public boolean isSolid() {
         return false;
-    }
-
-    public int getFullDamage() {
-        int meta;
-
-        if(isTop()) {
-            meta = this.down().getDamage();
-        } else {
-            meta = this.getDamage();
-        }
-        return (this.getId() << 5 ) + (meta & 0x07 | (isTop() ? 0x08 : 0) | (isRightHinged() ? 0x10 :0));
     }
 
     @Override
@@ -206,7 +199,7 @@ public abstract class BlockDoor extends BlockTransparentMeta implements Faceable
                 Block up = this.up();
 
                 if (up instanceof BlockDoor) {
-                    this.getLevel().setBlock(up, new BlockAir(), false);
+                    this.getLevel().setBlock(up, Block.get(AIR), false);
                     this.getLevel().useBreakOn(this);
                 }
 
@@ -215,7 +208,7 @@ public abstract class BlockDoor extends BlockTransparentMeta implements Faceable
         }
 
         if (type == Level.BLOCK_UPDATE_REDSTONE) {
-            if ((!isOpen() && this.level.isBlockPowered(this.getLocation())) || (isOpen() && !this.level.isBlockPowered(this.getLocation()))) {
+            if ((!isOpen() && this.level.isBlockPowered(this.asVector3i())) || (isOpen() && !this.level.isBlockPowered(this.asVector3i()))) {
                 this.level.getServer().getPluginManager().callEvent(new BlockRedstoneEvent(this, isOpen() ? 15 : 0, isOpen() ? 0 : 15));
 
                 this.toggle(null);
@@ -226,7 +219,7 @@ public abstract class BlockDoor extends BlockTransparentMeta implements Faceable
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         if (this.y > 254) return false;
         if (face == BlockFace.UP) {
             Block blockUp = this.up();
@@ -251,10 +244,10 @@ public abstract class BlockDoor extends BlockTransparentMeta implements Faceable
             }
             this.getLevel().setBlock(blockUp, Block.get(this.getId(), metaUp), true, true); //Top
 
-            if (!this.isOpen() && this.level.isBlockPowered(this.getLocation())) {
+            if (!this.isOpen() && this.level.isBlockPowered(this.asVector3i())) {
                 this.toggle(null);
                 metaUp |= DOOR_POWERED_BIT;
-                this.getLevel().setBlockDataAt(blockUp.getFloorX(), blockUp.getFloorY(), blockUp.getFloorZ(), metaUp);
+                this.getLevel().setBlockDataAt(blockUp.getX(), blockUp.getY(), blockUp.getZ(), metaUp);
             }
 
             return true;
@@ -268,15 +261,15 @@ public abstract class BlockDoor extends BlockTransparentMeta implements Faceable
         if (isTop(this.getDamage())) {
             Block down = this.down();
             if (down.getId() == this.getId()) {
-                this.getLevel().setBlock(down, new BlockAir(), true);
+                this.getLevel().setBlock(down, Block.get(AIR), true);
             }
         } else {
             Block up = this.up();
             if (up.getId() == this.getId()) {
-                this.getLevel().setBlock(up, new BlockAir(), true);
+                this.getLevel().setBlock(up, Block.get(AIR), true);
             }
         }
-        this.getLevel().setBlock(this, new BlockAir(), true);
+        this.getLevel().setBlock(this, Block.get(AIR), true);
 
         return true;
     }
@@ -292,7 +285,7 @@ public abstract class BlockDoor extends BlockTransparentMeta implements Faceable
             return false;
         }
 
-        this.level.addSound(this, isOpen() ? Sound.RANDOM_DOOR_OPEN : Sound.RANDOM_DOOR_CLOSE);
+        this.level.addSound(this.asVector3f(), isOpen() ? Sound.RANDOM_DOOR_OPEN : Sound.RANDOM_DOOR_CLOSE);
         return true;
     }
 

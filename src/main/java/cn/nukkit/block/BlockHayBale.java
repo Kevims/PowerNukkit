@@ -1,32 +1,20 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.item.Item;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
 import cn.nukkit.utils.Faceable;
+import cn.nukkit.utils.Identifier;
 
 /**
  * Created on 2015/11/24 by xtypr.
  * Package cn.nukkit.block in project Nukkit .
  */
-public class BlockHayBale extends BlockSolidMeta implements Faceable {
-    public BlockHayBale() {
-        this(0);
-    }
-
-    public BlockHayBale(int meta) {
-        super(meta);
-     }
-
-    @Override
-    public int getId() {
-        return HAY_BALE;
-    }
-
-    @Override
-    public String getName() {
-        return "Hay Bale";
+public class BlockHayBale extends BlockSolid implements Faceable {
+    public BlockHayBale(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -50,7 +38,7 @@ public class BlockHayBale extends BlockSolidMeta implements Faceable {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         int[] faces = new int[]{
                 0,
                 0,

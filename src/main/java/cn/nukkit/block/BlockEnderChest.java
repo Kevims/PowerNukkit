@@ -1,32 +1,31 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.blockentity.BlockEntity;
 import cn.nukkit.blockentity.BlockEntityEnderChest;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemBlock;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.StringTag;
 import cn.nukkit.nbt.tag.Tag;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
 import cn.nukkit.utils.Faceable;
+import cn.nukkit.utils.Identifier;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class BlockEnderChest extends BlockTransparentMeta implements Faceable {
+import static cn.nukkit.block.BlockIds.OBSIDIAN;
+
+public class BlockEnderChest extends BlockTransparent implements Faceable {
 
     private Set<Player> viewers = new HashSet<>();
 
-    public BlockEnderChest() {
-        this(0);
-    }
-
-    public BlockEnderChest(int meta) {
-        super(meta);
+    public BlockEnderChest(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -35,23 +34,13 @@ public class BlockEnderChest extends BlockTransparentMeta implements Faceable {
     }
 
     @Override
-    public int getId() {
-        return ENDER_CHEST;
-    }
-
-    @Override
     public int getLightLevel() {
         return 7;
     }
-
+    
     @Override
     public int getWaterloggingLevel() {
         return 1;
-    }
-
-    @Override
-    public String getName() {
-        return "Chest";
     }
 
     @Override
@@ -95,7 +84,7 @@ public class BlockEnderChest extends BlockTransparentMeta implements Faceable {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         int[] faces = {2, 5, 3, 4};
         this.setDamage(faces[player != null ? player.getDirection().getHorizontalIndex() : 0]);
 
@@ -117,7 +106,7 @@ public class BlockEnderChest extends BlockTransparentMeta implements Faceable {
             }
         }
 
-        BlockEntityEnderChest ender = (BlockEntityEnderChest) BlockEntity.createBlockEntity(BlockEntity.ENDER_CHEST, this.getLevel().getChunk((int) this.x >> 4, (int) this.z >> 4), nbt);
+        BlockEntityEnderChest ender = (BlockEntityEnderChest) BlockEntity.createBlockEntity(BlockEntity.ENDER_CHEST, this.getLevel().getChunk(this.getChunkX(), this.getChunkZ()), nbt);
         return ender != null;
     }
 
@@ -139,7 +128,7 @@ public class BlockEnderChest extends BlockTransparentMeta implements Faceable {
                         .putInt("x", (int) this.x)
                         .putInt("y", (int) this.y)
                         .putInt("z", (int) this.z);
-                chest = (BlockEntityEnderChest) BlockEntity.createBlockEntity(BlockEntity.ENDER_CHEST, this.getLevel().getChunk((int) this.x >> 4, (int) this.z >> 4), nbt);
+                chest = (BlockEntityEnderChest) BlockEntity.createBlockEntity(BlockEntity.ENDER_CHEST, this.getLevel().getChunk(this.getChunkX(), this.getChunkZ()), nbt);
                 if (chest == null) {
                     return false;
                 }
@@ -162,7 +151,7 @@ public class BlockEnderChest extends BlockTransparentMeta implements Faceable {
     public Item[] getDrops(Item item) {
         if (item.isPickaxe() && item.getTier() >= ItemTool.TIER_WOODEN) {
             return new Item[]{
-                    Item.get(Item.OBSIDIAN, 0, 8)
+                    Item.get(OBSIDIAN, 0, 8)
             };
         } else {
             return new Item[0];
@@ -195,7 +184,7 @@ public class BlockEnderChest extends BlockTransparentMeta implements Faceable {
 
     @Override
     public Item toItem() {
-        return new ItemBlock(this, 0);
+        return Item.get(id);
     }
 
     @Override

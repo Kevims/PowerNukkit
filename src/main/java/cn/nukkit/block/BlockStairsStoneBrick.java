@@ -1,23 +1,15 @@
 package cn.nukkit.block;
 
 import cn.nukkit.item.ItemTool;
+import cn.nukkit.utils.Identifier;
 
 /**
  * Created on 2015/11/25 by xtypr.
  * Package cn.nukkit.block in project Nukkit .
  */
 public class BlockStairsStoneBrick extends BlockStairs {
-    public BlockStairsStoneBrick() {
-        this(0);
-    }
-
-    public BlockStairsStoneBrick(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public int getId() {
-        return STONE_BRICK_STAIRS;
+    public BlockStairsStoneBrick(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -33,10 +25,5 @@ public class BlockStairsStoneBrick extends BlockStairs {
     @Override
     public double getResistance() {
         return 30;
-    }
-
-    @Override
-    public String getName() {
-        return "Stone Brick Stairs";
     }
 }

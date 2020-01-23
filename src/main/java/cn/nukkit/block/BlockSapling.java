@@ -1,23 +1,28 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.generator.object.BasicGenerator;
 import cn.nukkit.level.generator.object.tree.*;
 import cn.nukkit.level.particle.BoneMealParticle;
+import cn.nukkit.math.BedrockRandom;
 import cn.nukkit.math.BlockFace;
-import cn.nukkit.math.NukkitRandom;
-import cn.nukkit.math.Vector3;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.math.Vector3i;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 import java.util.concurrent.ThreadLocalRandom;
+
+import static cn.nukkit.block.BlockIds.*;
+import static cn.nukkit.item.ItemIds.DYE;
 
 /**
  * author: Angelic47
  * Nukkit Project
  */
-public class BlockSapling extends BlockFlowable {
+public class BlockSapling extends FloodableBlock {
     public static final int OAK = 0;
     public static final int SPRUCE = 1;
     public static final int BIRCH = 2;
@@ -29,38 +34,14 @@ public class BlockSapling extends BlockFlowable {
     public static final int ACACIA = 4;
     public static final int DARK_OAK = 5;
 
-    public BlockSapling() {
-        this(0);
-    }
-
-    public BlockSapling(int meta) {
-        super(meta);
+    public BlockSapling(Identifier id) {
+        super(id);
     }
 
     @Override
-    public int getId() {
-        return SAPLING;
-    }
-
-    @Override
-    public String getName() {
-        String[] names = new String[]{
-                "Oak Sapling",
-                "Spruce Sapling",
-                "Birch Sapling",
-                "Jungle Sapling",
-                "Acacia Sapling",
-                "Dark Oak Sapling",
-                "",
-                ""
-        };
-        return names[this.getDamage() & 0x07];
-    }
-
-    @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         Block down = this.down();
-        if (down.getId() == Block.GRASS || down.getId() == Block.DIRT || down.getId() == Block.FARMLAND || down.getId() == Block.PODZOL) {
+        if (down.getId() == GRASS || down.getId() == DIRT || down.getId() == FARMLAND || down.getId() == PODZOL) {
             this.getLevel().setBlock(block, this, true, true);
             return true;
         }
@@ -74,9 +55,9 @@ public class BlockSapling extends BlockFlowable {
     }
 
     public boolean onActivate(Item item, Player player) {
-        if (item.getId() == Item.DYE && item.getDamage() == 0x0F) { //BoneMeal
+        if (item.getId() == DYE && item.getDamage() == 0x0F) { //BoneMeal
             if (player != null && (player.gamemode & 0x01) == 0) {
-                item.count--;
+                item.decrementCount();
             }
 
             this.level.addParticle(new BoneMealParticle(this));
@@ -126,7 +107,8 @@ public class BlockSapling extends BlockFlowable {
                 for (; x >= -1; --x) {
                     for (; z >= -1; --z) {
                         if (this.findSaplings(x, z, JUNGLE)) {
-                            generator = new ObjectJungleBigTree(10, 20, new BlockWood(BlockWood.JUNGLE), new BlockLeaves(BlockLeaves.JUNGLE));
+                            generator = new ObjectJungleBigTree(10, 20,
+                                    Block.get(LOG, BlockLog.JUNGLE), Block.get(LEAVES, BlockLeaves.JUNGLE));
                             bigTree = true;
                             break loop;
                         }
@@ -160,7 +142,7 @@ public class BlockSapling extends BlockFlowable {
                 break;
             //TODO: big spruce
             default:
-                ObjectTree.growTree(this.level, this.getFloorX(), this.getFloorY(), this.getFloorZ(), new NukkitRandom(), this.getDamage() & 0x07);
+                ObjectTree.growTree(this.level, this.getX(), this.getY(), this.getZ(), new BedrockRandom(), this.getDamage() & 0x07);
                 return;
         }
 
@@ -173,7 +155,7 @@ public class BlockSapling extends BlockFlowable {
             this.level.setBlock(this, get(AIR), true, false);
         }
 
-        if (!generator.generate(this.level, new NukkitRandom(), this.add(x, 0, z))) {
+        if (!generator.generate(this.level, new BedrockRandom(), this.add(x, 0, z).asVector3i())) {
             if (bigTree) {
                 this.level.setBlock(this.add(x, 0, z), this, true, false);
                 this.level.setBlock(this.add(x + 1, 0, z), this, true, false);
@@ -189,14 +171,14 @@ public class BlockSapling extends BlockFlowable {
         return this.isSameType(this.add(x, 0, z), type) && this.isSameType(this.add(x + 1, 0, z), type) && this.isSameType(this.add(x, 0, z + 1), type) && this.isSameType(this.add(x + 1, 0, z + 1), type);
     }
 
-    public boolean isSameType(Vector3 pos, int type) {
+    public boolean isSameType(Vector3i pos, int type) {
         Block block = this.level.getBlock(pos);
         return block.getId() == this.getId() && (block.getDamage() & 0x07) == (type & 0x07);
     }
 
     @Override
     public Item toItem() {
-        return Item.get(BlockID.SAPLING, this.getDamage() & 0x7);
+        return Item.get(SAPLING, this.getDamage() & 0x7);
     }
 
     @Override

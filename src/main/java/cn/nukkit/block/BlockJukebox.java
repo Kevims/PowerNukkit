@@ -1,32 +1,26 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.blockentity.BlockEntity;
 import cn.nukkit.blockentity.BlockEntityJukebox;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemBlock;
-import cn.nukkit.item.ItemRecord;
+import cn.nukkit.item.RecordItem;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.ListTag;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.AIR;
 
 /**
  * Created by CreeperFace on 7.8.2017.
  */
 public class BlockJukebox extends BlockSolid {
 
-    public BlockJukebox() {
-    }
-
-    @Override
-    public String getName() {
-        return "Jukebox";
-    }
-
-    @Override
-    public int getId() {
-        return JUKEBOX;
+    public BlockJukebox(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -36,7 +30,7 @@ public class BlockJukebox extends BlockSolid {
 
     @Override
     public Item toItem() {
-        return new ItemBlock(this, 0);
+        return Item.get(id, 0);
     }
 
     @Override
@@ -47,9 +41,9 @@ public class BlockJukebox extends BlockSolid {
         }
 
         BlockEntityJukebox jukebox = (BlockEntityJukebox) blockEntity;
-        if (jukebox.getRecordItem().getId() != 0) {
+        if (jukebox.getRecordItem().getId() != AIR) {
             jukebox.dropItem();
-        } else if (item instanceof ItemRecord) {
+        } else if (item instanceof RecordItem) {
             jukebox.setRecordItem(item);
             jukebox.play();
             player.getInventory().decreaseCount(player.getInventory().getHeldItemIndex());
@@ -59,8 +53,8 @@ public class BlockJukebox extends BlockSolid {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
-        if (super.place(item, block, target, face, fx, fy, fz, player)) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
+        if (super.place(item, block, target, face, clickPos, player)) {
             createBlockEntity();
             return true;
         }
@@ -86,11 +80,11 @@ public class BlockJukebox extends BlockSolid {
         CompoundTag nbt = new CompoundTag()
                 .putList(new ListTag<>("Items"))
                 .putString("id", BlockEntity.JUKEBOX)
-                .putInt("x", getFloorX())
-                .putInt("y", getFloorY())
-                .putInt("z", getFloorZ());
+                .putInt("x", getX())
+                .putInt("y", getY())
+                .putInt("z", getZ());
 
-        return BlockEntity.createBlockEntity(BlockEntity.JUKEBOX, this.level.getChunk(getFloorX() >> 4, getFloorZ() >> 4), nbt);
+        return BlockEntity.createBlockEntity(BlockEntity.JUKEBOX, this.level.getChunk(getChunkX(), getChunkZ()), nbt);
     }
 
     @Override

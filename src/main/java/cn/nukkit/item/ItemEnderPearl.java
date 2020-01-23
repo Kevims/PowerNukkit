@@ -4,18 +4,14 @@ import cn.nukkit.Player;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.projectile.EntityEnderPearl;
 
+import cn.nukkit.entity.EntityType;
+import cn.nukkit.entity.EntityTypes;
+import cn.nukkit.utils.Identifier;
+
 public class ItemEnderPearl extends ProjectileItem {
 
-    public ItemEnderPearl() {
-        this(0, 1);
-    }
-
-    public ItemEnderPearl(Integer meta) {
-        this(meta, 1);
-    }
-
-    public ItemEnderPearl(Integer meta, int count) {
-        super(ENDER_PEARL, 0, count, "Ender Pearl");
+    public ItemEnderPearl(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -24,8 +20,8 @@ public class ItemEnderPearl extends ProjectileItem {
     }
 
     @Override
-    public String getProjectileEntityType() {
-        return "EnderPearl";
+    public EntityType<?> getProjectileEntityType() {
+        return EntityTypes.ENDER_PEARL;
     }
 
     @Override

@@ -1,10 +1,16 @@
 package cn.nukkit.network;
 
 import cn.nukkit.Server;
+import cn.nukkit.network.protocol.BatchPacket;
+import cn.nukkit.network.protocol.DataPacket;
+import cn.nukkit.player.Player;
 import cn.nukkit.scheduler.AsyncTask;
+import cn.nukkit.utils.Binary;
 import cn.nukkit.utils.Zlib;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.util.ReferenceCountUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,39 +19,59 @@ import java.util.List;
  */
 public class CompressBatchedTask extends AsyncTask {
 
-    public int level = 7;
-    public byte[][] data;
-    public byte[] finalData;
-    public int channel = 0;
-    public List<String> targets = new ArrayList<>();
+    private final List<DataPacket> toBatch;
+    private final List<Player> targets;
+    private final int level;
+    private ByteBuf compressed;
 
-    public CompressBatchedTask(byte[][] data, List<String> targets) {
-        this(data, targets, 7);
+    public CompressBatchedTask(Server server, List<DataPacket> toBatch, List<Player> targets) {
+        this(toBatch, targets, 7);
     }
 
-    public CompressBatchedTask(byte[][] data, List<String> targets, int level) {
-        this(data, targets, level, 0);
-    }
-
-    public CompressBatchedTask(byte[][] data, List<String> targets, int level, int channel) {
-        this.data = data;
+    public CompressBatchedTask(List<DataPacket> toBatch, List<Player> targets, int level) {
+        this.toBatch = toBatch;
         this.targets = targets;
         this.level = level;
-        this.channel = channel;
     }
 
     @Override
     public void onRun() {
+        ByteBuf packetBuffer = ByteBufAllocator.DEFAULT.ioBuffer(32);
+        ByteBuf payload = ByteBufAllocator.DEFAULT.ioBuffer();
         try {
-            this.finalData = Zlib.deflate(this.data, this.level);
-            this.data = null;
-        } catch (Exception e) {
-            //ignore
+            for (DataPacket packet : this.toBatch) {
+                packet.tryEncode(packetBuffer);
+
+                Binary.writeVarIntBuffer(payload, packetBuffer);
+
+                packetBuffer.clear();
+            }
+
+            this.compressed = ByteBufAllocator.DEFAULT.ioBuffer(payload.readableBytes() / 2);
+            try {
+                Zlib.DEFAULT.deflate(payload, compressed, this.level);
+            } catch (Exception e) {
+                compressed.release();
+                throw e;
+            }
+        } finally {
+            this.toBatch.forEach(ReferenceCountUtil::release);
+            packetBuffer.release();
+            payload.release();
         }
     }
 
     @Override
     public void onCompletion(Server server) {
-        server.broadcastPacketsCallback(this.finalData, this.targets);
+        BatchPacket packet = new BatchPacket();
+        packet.payload = this.compressed;
+
+        try {
+            for (Player target : targets) {
+                target.directDataPacket(packet);
+            }
+        } finally {
+            packet.release();
+        }
     }
 }

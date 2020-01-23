@@ -1,32 +1,21 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemRedstoneRepeater;
+import cn.nukkit.item.ItemIds;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.player.Player;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.POWERED_REPEATER;
 
 /**
  * Created by CreeperFace on 10.4.2017.
  */
 public class BlockRedstoneRepeaterUnpowered extends BlockRedstoneDiode {
 
-    public BlockRedstoneRepeaterUnpowered() {
-        this(0);
-    }
-
-    public BlockRedstoneRepeaterUnpowered(int meta) {
-        super(meta);
+    public BlockRedstoneRepeaterUnpowered(Identifier id) {
+        super(id);
         this.isPowered = false;
-    }
-
-    @Override
-    public int getId() {
-        return UNPOWERED_REPEATER;
-    }
-
-    @Override
-    public String getName() {
-        return "Unpowered Repeater";
     }
 
     @Override
@@ -50,7 +39,7 @@ public class BlockRedstoneRepeaterUnpowered extends BlockRedstoneDiode {
 
     @Override
     public Item toItem() {
-        return new ItemRedstoneRepeater();
+        return Item.get(ItemIds.REPEATER);
     }
 
     @Override
@@ -60,7 +49,7 @@ public class BlockRedstoneRepeaterUnpowered extends BlockRedstoneDiode {
 
     @Override
     protected Block getPowered() {
-        return new BlockRedstoneRepeaterPowered(this.getDamage());
+        return Block.get(POWERED_REPEATER, this.getDamage());
     }
 
     @Override

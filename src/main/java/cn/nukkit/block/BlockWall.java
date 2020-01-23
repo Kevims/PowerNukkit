@@ -4,27 +4,21 @@ import cn.nukkit.item.ItemTool;
 import cn.nukkit.math.AxisAlignedBB;
 import cn.nukkit.math.BlockFace;
 import cn.nukkit.math.SimpleAxisAlignedBB;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.COBBLESTONE_WALL;
 
 /**
  * author: MagicDroidX
  * Nukkit Project
  */
-public class BlockWall extends BlockTransparentMeta {
+public class BlockWall extends BlockTransparent {
     public static final int NONE_MOSSY_WALL = 0;
     public static final int MOSSY_WALL = 1;
 
 
-    public BlockWall() {
-        this(0);
-    }
-
-    public BlockWall(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public int getId() {
-        return STONE_WALL;
+    public BlockWall(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -45,15 +39,6 @@ public class BlockWall extends BlockTransparentMeta {
     @Override
     public int getWaterloggingLevel() {
         return 1;
-    }
-
-    @Override
-    public String getName() {
-        if (this.getDamage() == 0x01) {
-            return "Mossy Cobblestone Wall";
-        }
-
-        return "Cobblestone Wall";
     }
 
     @Override
@@ -88,7 +73,7 @@ public class BlockWall extends BlockTransparentMeta {
     }
 
     public boolean canConnect(Block block) {
-        return (!(block.getId() != COBBLE_WALL && block.getId() != FENCE_GATE)) || block.isSolid() && !block.isTransparent();
+        return (!(block.getId() != COBBLESTONE_WALL && block instanceof BlockFence)) || block.isSolid() && !block.isTransparent();
     }
 
     @Override

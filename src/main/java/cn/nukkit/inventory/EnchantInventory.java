@@ -1,7 +1,7 @@
 package cn.nukkit.inventory;
 
-import cn.nukkit.Player;
-import cn.nukkit.level.Position;
+import cn.nukkit.level.BlockPosition;
+import cn.nukkit.player.Player;
 
 
 /**
@@ -10,7 +10,7 @@ import cn.nukkit.level.Position;
  */
 public class EnchantInventory extends FakeBlockUIComponent {
 
-    public EnchantInventory(PlayerUIInventory playerUI, Position position) {
+    public EnchantInventory(PlayerUIInventory playerUI, BlockPosition position) {
         super(playerUI, InventoryType.ENCHANT_TABLE, 14, position);
     }
 

@@ -1,6 +1,5 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.event.block.BlockGrowEvent;
@@ -11,25 +10,20 @@ import cn.nukkit.level.Level;
 import cn.nukkit.math.AxisAlignedBB;
 import cn.nukkit.math.BlockFace;
 import cn.nukkit.math.SimpleAxisAlignedBB;
-import cn.nukkit.math.Vector3;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.*;
 
 /**
  * @author Nukkit Project Team
  */
-public class BlockCactus extends BlockTransparentMeta {
+public class BlockCactus extends BlockTransparent {
 
-    public BlockCactus(int meta) {
-        super(meta);
-    }
-
-    public BlockCactus() {
-        this(0);
-    }
-
-    @Override
-    public int getId() {
-        return CACTUS;
+    public BlockCactus(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -101,7 +95,7 @@ public class BlockCactus extends BlockTransparentMeta {
             } else {
                 for (int side = 2; side <= 5; ++side) {
                     Block block = getSide(BlockFace.fromIndex(side));
-                    if (!block.canBeFlowedInto()) {
+                    if (!block.canBeFlooded()) {
                         this.getLevel().useBreakOn(this);
                     }
                 }
@@ -110,9 +104,9 @@ public class BlockCactus extends BlockTransparentMeta {
             if (down().getId() != CACTUS) {
                 if (this.getDamage() == 0x0F) {
                     for (int y = 1; y < 3; ++y) {
-                        Block b = this.getLevel().getBlock(new Vector3(this.x, this.y + y, this.z));
+                        Block b = this.getLevel().getBlock(this.x, this.y + y, this.z);
                         if (b.getId() == AIR) {
-                            BlockGrowEvent event = new BlockGrowEvent(b, new BlockCactus());
+                            BlockGrowEvent event = new BlockGrowEvent(b, Block.get(CACTUS));
                             Server.getInstance().getPluginManager().callEvent(event);
                             if (!event.isCancelled()) {
                                 this.getLevel().setBlock(b, event.getNewState(), true);
@@ -132,25 +126,20 @@ public class BlockCactus extends BlockTransparentMeta {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         Block down = this.down();
         if (down.getId() == SAND || down.getId() == CACTUS) {
             Block block0 = north();
             Block block1 = south();
             Block block2 = west();
             Block block3 = east();
-            if (block0.canBeFlowedInto() && block1.canBeFlowedInto() && block2.canBeFlowedInto() && block3.canBeFlowedInto()) {
+            if (block0.canBeFlooded() && block1.canBeFlooded() && block2.canBeFlooded() && block3.canBeFlooded()) {
                 this.getLevel().setBlock(this, this, true);
 
                 return true;
             }
         }
         return false;
-    }
-
-    @Override
-    public String getName() {
-        return "Cactus";
     }
 
     @Override
@@ -161,7 +150,7 @@ public class BlockCactus extends BlockTransparentMeta {
     @Override
     public Item[] getDrops(Item item) {
         return new Item[]{
-            Item.get(Item.CACTUS, 0, 1)
+                Item.get(CACTUS, 0, 1)
         };
     }
 }

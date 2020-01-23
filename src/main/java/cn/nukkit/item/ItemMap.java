@@ -1,12 +1,13 @@
 package cn.nukkit.item;
 
-import cn.nukkit.Player;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.network.protocol.ClientboundMapItemDataPacket;
-import cn.nukkit.utils.MainLogger;
+import cn.nukkit.player.Player;
+import cn.nukkit.utils.Identifier;
+import lombok.extern.log4j.Log4j2;
 
 import javax.imageio.ImageIO;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -16,26 +17,13 @@ import java.io.IOException;
 /**
  * Created by CreeperFace on 18.3.2017.
  */
+@Log4j2
 public class ItemMap extends Item {
 
     public static int mapCount = 0;
 
-    public ItemMap() {
-        this(0, 1);
-    }
-
-    public ItemMap(Integer meta) {
-        this(meta, 1);
-    }
-
-    public ItemMap(Integer meta, int count) {
-        super(MAP, meta, count, "Map");
-        switch (meta) {
-            case 3: this.name = "Ocean Explorer Map"; break;
-            case 4: this.name = "Woodland Explorer Map"; break;
-            case 5: this.name = "Treasure Map"; break;
-        }
-
+    public ItemMap(Identifier id) {
+        super(id);
         if (!hasCompoundTag() || !getNamedTag().contains("map_uuid")) {
             CompoundTag tag = new CompoundTag();
             tag.putLong("map_uuid", mapCount++);
@@ -63,7 +51,7 @@ public class ItemMap extends Item {
 
             this.getNamedTag().putByteArray("Colors", baos.toByteArray());
         } catch (IOException e) {
-            MainLogger.getLogger().logException(e);
+            log.error("Unable to set map image", e);
         }
     }
 
@@ -72,7 +60,7 @@ public class ItemMap extends Item {
             byte[] data = getNamedTag().getByteArray("Colors");
             return ImageIO.read(new ByteArrayInputStream(data));
         } catch (IOException e) {
-            MainLogger.getLogger().logException(e);
+            log.error("Unable to load image from NBT", e);
         }
 
         return null;

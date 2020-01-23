@@ -4,33 +4,16 @@ import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.utils.BlockColor;
 import cn.nukkit.utils.DyeColor;
+import cn.nukkit.utils.Identifier;
 
 /**
  * Created on 2015/12/2 by xtypr.
  * Package cn.nukkit.block in project Nukkit .
  */
-public class BlockTerracottaStained extends BlockSolidMeta {
+public class BlockTerracottaStained extends BlockSolid {
 
-    public BlockTerracottaStained() {
-        this(0);
-    }
-
-    public BlockTerracottaStained(int meta) {
-        super(meta);
-    }
-
-    public BlockTerracottaStained(DyeColor dyeColor) {
-        this(dyeColor.getWoolData());
-    }
-
-    @Override
-    public String getName() {
-        return getDyeColor().getName() + " Terracotta";
-    }
-
-    @Override
-    public int getId() {
-        return STAINED_TERRACOTTA;
+    public BlockTerracottaStained(Identifier id) {
+        super(id);
     }
 
     @Override

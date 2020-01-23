@@ -1,17 +1,19 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.blockentity.BlockEntity;
 import cn.nukkit.blockentity.BlockEntityEnchantTable;
 import cn.nukkit.inventory.EnchantInventory;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.nbt.tag.StringTag;
 import cn.nukkit.nbt.tag.Tag;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 import java.util.Map;
 
@@ -20,17 +22,8 @@ import java.util.Map;
  * Package cn.nukkit.block in project Nukkit .
  */
 public class BlockEnchantingTable extends BlockTransparent {
-    public BlockEnchantingTable() {
-    }
-
-    @Override
-    public int getId() {
-        return ENCHANTING_TABLE;
-    }
-
-    @Override
-    public String getName() {
-        return "Enchanting Table";
+    public BlockEnchantingTable(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -75,14 +68,14 @@ public class BlockEnchantingTable extends BlockTransparent {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         this.getLevel().setBlock(block, this, true, true);
 
         CompoundTag nbt = new CompoundTag()
                 .putString("id", BlockEntity.ENCHANT_TABLE)
-                .putInt("x", (int) this.x)
-                .putInt("y", (int) this.y)
-                .putInt("z", (int) this.z);
+                .putInt("x", this.x)
+                .putInt("y", this.y)
+                .putInt("z", this.z);
 
         if (item.hasCustomName()) {
             nbt.putString("CustomName", item.getCustomName());
@@ -95,7 +88,7 @@ public class BlockEnchantingTable extends BlockTransparent {
             }
         }
 
-        BlockEntityEnchantTable enchantTable = (BlockEntityEnchantTable) BlockEntity.createBlockEntity(BlockEntity.ENCHANT_TABLE, getLevel().getChunk((int) this.x >> 4, (int) this.z >> 4), nbt);
+        BlockEntityEnchantTable enchantTable = (BlockEntityEnchantTable) BlockEntity.createBlockEntity(BlockEntity.ENCHANT_TABLE, getLevel().getChunk(this.getChunkX(), this.getChunkZ()), nbt);
         return enchantTable != null;
     }
 
@@ -113,7 +106,7 @@ public class BlockEnchantingTable extends BlockTransparent {
                         .putInt("x", (int) this.x)
                         .putInt("y", (int) this.y)
                         .putInt("z", (int) this.z);
-                enchantTable = (BlockEntityEnchantTable) BlockEntity.createBlockEntity(BlockEntity.ENCHANT_TABLE, this.getLevel().getChunk((int) (this.x) >> 4, (int) (this.z) >> 4), nbt);
+                enchantTable = (BlockEntityEnchantTable) BlockEntity.createBlockEntity(BlockEntity.ENCHANT_TABLE, this.getLevel().getChunk(this.getChunkX(), this.getChunkZ()), nbt);
                 if (enchantTable == null) {
                     return false;
                 }
@@ -125,7 +118,7 @@ public class BlockEnchantingTable extends BlockTransparent {
                 }
             }
 
-            player.addWindow(new EnchantInventory(player.getUIInventory(), this.getLocation()), Player.ENCHANT_WINDOW_ID);
+            player.addWindow(new EnchantInventory(player.getUIInventory(), this), Player.ENCHANT_WINDOW_ID);
         }
 
         return true;

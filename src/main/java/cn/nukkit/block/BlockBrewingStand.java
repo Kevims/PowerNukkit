@@ -1,35 +1,28 @@
 package cn.nukkit.block;
 
 
-import cn.nukkit.Player;
 import cn.nukkit.blockentity.BlockEntity;
 import cn.nukkit.blockentity.BlockEntityBrewingStand;
 import cn.nukkit.inventory.ContainerInventory;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemBrewingStand;
+import cn.nukkit.item.ItemIds;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.nbt.tag.StringTag;
 import cn.nukkit.nbt.tag.Tag;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 import java.util.Map;
 
-public class BlockBrewingStand extends BlockSolidMeta {
+public class BlockBrewingStand extends BlockSolid {
 
-    public BlockBrewingStand() {
-        this(0);
-    }
-
-    public BlockBrewingStand(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public String getName() {
-        return "Brewing Stand";
+    public BlockBrewingStand(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -58,17 +51,12 @@ public class BlockBrewingStand extends BlockSolidMeta {
     }
 
     @Override
-    public int getId() {
-        return BREWING_STAND_BLOCK;
-    }
-
-    @Override
     public int getLightLevel() {
         return 1;
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         if (!block.down().isTransparent()) {
             getLevel().setBlock(block, this, true, true);
 
@@ -90,7 +78,7 @@ public class BlockBrewingStand extends BlockSolidMeta {
                 }
             }
 
-            BlockEntityBrewingStand brewing = (BlockEntityBrewingStand) BlockEntity.createBlockEntity(BlockEntity.BREWING_STAND, getLevel().getChunk((int) this.x >> 4, (int) this.z >> 4), nbt);
+            BlockEntityBrewingStand brewing = new BlockEntityBrewingStand(getLevel().getChunk(this.getChunkX(), this.getChunkZ()), nbt);
             return brewing != null;
         }
         return false;
@@ -110,7 +98,7 @@ public class BlockBrewingStand extends BlockSolidMeta {
                         .putInt("x", (int) this.x)
                         .putInt("y", (int) this.y)
                         .putInt("z", (int) this.z);
-                brewing = (BlockEntityBrewingStand) BlockEntity.createBlockEntity(BlockEntity.BREWING_STAND, this.getLevel().getChunk((int) (this.x) >> 4, (int) (this.z) >> 4), nbt);
+                brewing = new BlockEntityBrewingStand(this.getLevel().getChunk(this.getChunkX(), this.getChunkZ()), nbt);
                 if (brewing == null) {
                     return false;
                 }
@@ -130,7 +118,7 @@ public class BlockBrewingStand extends BlockSolidMeta {
 
     @Override
     public Item toItem() {
-        return new ItemBrewingStand();
+        return Item.get(ItemIds.BREWING_STAND);
     }
 
     @Override

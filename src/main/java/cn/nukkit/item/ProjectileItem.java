@@ -1,31 +1,33 @@
 package cn.nukkit.item;
 
-import cn.nukkit.Player;
 import cn.nukkit.entity.Entity;
-import cn.nukkit.entity.projectile.EntityEnderPearl;
-import cn.nukkit.entity.projectile.EntityProjectile;
+import cn.nukkit.entity.EntityType;
+import cn.nukkit.entity.impl.projectile.EntityEnderPearl;
 import cn.nukkit.event.entity.ProjectileLaunchEvent;
-import cn.nukkit.math.Vector3;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.DoubleTag;
 import cn.nukkit.nbt.tag.FloatTag;
 import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.network.protocol.LevelSoundEventPacketV2;
+import cn.nukkit.player.Player;
+import cn.nukkit.registry.EntityRegistry;
+import cn.nukkit.utils.Identifier;
 
 /**
  * @author CreeperFace
  */
 public abstract class ProjectileItem extends Item {
 
-    public ProjectileItem(int id, Integer meta, int count, String name) {
-        super(id, meta, count, name);
+    public ProjectileItem(Identifier id) {
+        super(id);
     }
 
-    abstract public String getProjectileEntityType();
+    abstract public EntityType<?> getProjectileEntityType();
 
     abstract public float getThrowForce();
 
-    public boolean onClickAir(Player player, Vector3 directionVector) {
+    public boolean onClickAir(Player player, Vector3f directionVector) {
         CompoundTag nbt = new CompoundTag()
                 .putList(new ListTag<DoubleTag>("Pos")
                         .add(new DoubleTag("", player.x))
@@ -41,34 +43,29 @@ public abstract class ProjectileItem extends Item {
 
         this.correctNBT(nbt);
 
-        Entity projectile = Entity.createEntity(this.getProjectileEntityType(), player.getLevel().getChunk(player.getFloorX() >> 4, player.getFloorZ() >> 4), nbt, player);
-        if (projectile != null) {
-            projectile = correctProjectile(player, projectile);
+        Entity projectile = EntityRegistry.get().newEntity(this.getProjectileEntityType(), player.getLevel().getChunk(player.getChunkX(), player.getChunkZ()), nbt);
+        projectile.setOwner(player);
+        projectile = correctProjectile(player, projectile);
             if (projectile == null) {
                 return false;
             }
 
-            projectile.setMotion(projectile.getMotion().multiply(this.getThrowForce()));
+        projectile.setMotion(projectile.getMotion().multiply(this.getThrowForce()));
 
-            if (projectile instanceof EntityProjectile) {
-                ProjectileLaunchEvent ev = new ProjectileLaunchEvent((EntityProjectile) projectile);
+        ProjectileLaunchEvent ev = new ProjectileLaunchEvent(projectile);
 
-                player.getServer().getPluginManager().callEvent(ev);
-                if (ev.isCancelled()) {
-                    projectile.kill();
-                } else {
-                    if (!player.isCreative()) {
-                        this.count--;
-                    }
-                    if (projectile instanceof EntityEnderPearl) {
-                        player.onThrowEnderPearl();
-                    }
-                    projectile.spawnToAll();
-                    addThrowSound(player);
-                }
-            }
+        player.getServer().getPluginManager().callEvent(ev);
+        if (ev.isCancelled()) {
+            projectile.kill();
         } else {
-            return false;
+            if (!player.isCreative()) {
+                this.decrementCount();
+            }
+            if (projectile instanceof EntityEnderPearl) {
+                player.onThrowEnderPearl();
+            }
+            projectile.spawnToAll();
+            addThrowSound(player);
         }
         return true;
     }

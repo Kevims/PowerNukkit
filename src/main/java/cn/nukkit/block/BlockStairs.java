@@ -1,22 +1,23 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.math.AxisAlignedBB;
 import cn.nukkit.math.BlockFace;
 import cn.nukkit.math.SimpleAxisAlignedBB;
-import cn.nukkit.utils.BlockColor;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.Faceable;
+import cn.nukkit.utils.Identifier;
 
 /**
  * author: MagicDroidX
  * Nukkit Project
  */
-public abstract class BlockStairs extends BlockTransparentMeta implements Faceable {
+public abstract class BlockStairs extends BlockTransparent implements Faceable {
 
-    protected BlockStairs(int meta) {
-        super(meta);
+    public BlockStairs(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -32,10 +33,10 @@ public abstract class BlockStairs extends BlockTransparentMeta implements Faceab
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         int[] faces = new int[]{2, 1, 3, 0};
         this.setDamage(faces[player != null ? player.getDirection().getHorizontalIndex() : 0]);
-        if ((fy > 0.5 && face != BlockFace.UP) || face == BlockFace.DOWN) {
+        if ((clickPos.getY() > 0.5 && face != BlockFace.UP) || face == BlockFace.DOWN) {
             this.setDamage(this.getDamage() | 0x04); //Upside-down stairs
         }
         this.getLevel().setBlock(block, this, true, true);

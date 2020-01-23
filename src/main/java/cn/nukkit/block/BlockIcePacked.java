@@ -2,7 +2,9 @@ package cn.nukkit.block;
 
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemTool;
-import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.AIR;
 
 /**
  * author: MagicDroidX
@@ -10,17 +12,8 @@ import cn.nukkit.utils.BlockColor;
  */
 public class BlockIcePacked extends BlockIce {
 
-    public BlockIcePacked() {
-    }
-
-    @Override
-    public int getId() {
-        return PACKED_ICE;
-    }
-
-    @Override
-    public String getName() {
-        return "Packed Ice";
+    public BlockIcePacked(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -40,7 +33,7 @@ public class BlockIcePacked extends BlockIce {
     
     @Override
     public boolean onBreak(Item item) {
-        this.getLevel().setBlock(this, new BlockAir(), true); //no water
+        this.getLevel().setBlock(this, Block.get(AIR), true); //no water
         return true;
     }
 

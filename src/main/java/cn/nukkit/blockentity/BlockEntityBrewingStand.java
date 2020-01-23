@@ -1,10 +1,9 @@
 package cn.nukkit.blockentity;
 
-import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.block.Block;
-import cn.nukkit.block.BlockAir;
 import cn.nukkit.block.BlockBrewingStand;
+import cn.nukkit.block.BlockIds;
 import cn.nukkit.event.inventory.BrewEvent;
 import cn.nukkit.event.inventory.StartBrewEvent;
 import cn.nukkit.inventory.BrewingInventory;
@@ -12,18 +11,23 @@ import cn.nukkit.inventory.BrewingRecipe;
 import cn.nukkit.inventory.ContainerRecipe;
 import cn.nukkit.inventory.InventoryHolder;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemBlock;
-import cn.nukkit.level.format.FullChunk;
+import cn.nukkit.level.chunk.Chunk;
 import cn.nukkit.nbt.NBTIO;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.network.protocol.ContainerSetDataPacket;
 import cn.nukkit.network.protocol.LevelSoundEventPacket;
+import cn.nukkit.player.Player;
+import cn.nukkit.utils.Identifier;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+
+import static cn.nukkit.block.BlockIds.AIR;
+import static cn.nukkit.block.BlockIds.REDSTONE_WIRE;
+import static cn.nukkit.item.ItemIds.*;
 
 public class BlockEntityBrewingStand extends BlockEntitySpawnable implements InventoryHolder, BlockEntityContainer, BlockEntityNameable {
 
@@ -35,13 +39,13 @@ public class BlockEntityBrewingStand extends BlockEntitySpawnable implements Inv
     public int fuelTotal;
     public int fuelAmount;
 
-    public static final List<Integer> ingredients = new ArrayList<Integer>() {
-        {
-            addAll(Arrays.asList(Item.NETHER_WART, Item.GHAST_TEAR, Item.GLOWSTONE_DUST, Item.REDSTONE_DUST, Item.GUNPOWDER, Item.MAGMA_CREAM, Item.BLAZE_POWDER, Item.GOLDEN_CARROT, Item.SPIDER_EYE, Item.FERMENTED_SPIDER_EYE, Item.GLISTERING_MELON, Item.SUGAR, Item.RABBIT_FOOT, Item.PUFFERFISH, Item.TURTLE_SHELL, Item.PHANTOM_MEMBRANE, 437));
-        }
-    };
+    public static final List<Identifier> ingredients = new ArrayList<>(Arrays.asList(
+            NETHER_WART, GOLD_NUGGET, GHAST_TEAR, GLOWSTONE_DUST, REDSTONE_WIRE, GUNPOWDER, MAGMA_CREAM, BLAZE_POWDER,
+            GOLDEN_CARROT, SPIDER_EYE, FERMENTED_SPIDER_EYE, SPECKLED_MELON, SUGAR, FISH, RABBIT_FOOT, PUFFERFISH,
+            TURTLE_SHELL_PIECE, PHANTOM_MEMBRANE, DRAGON_BREATH
+    ));
 
-    public BlockEntityBrewingStand(FullChunk chunk, CompoundTag nbt) {
+    public BlockEntityBrewingStand(Chunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
     }
 
@@ -124,7 +128,7 @@ public class BlockEntityBrewingStand extends BlockEntitySpawnable implements Inv
 
     @Override
     public boolean isBlockEntityValid() {
-        return getBlock().getId() == Block.BREWING_STAND_BLOCK;
+        return getBlock().getId() == BlockIds.BREWING_STAND;
     }
 
     @Override
@@ -147,7 +151,7 @@ public class BlockEntityBrewingStand extends BlockEntitySpawnable implements Inv
     public Item getItem(int index) {
         int i = this.getSlotIndex(index);
         if (i < 0) {
-            return new ItemBlock(new BlockAir(), 0, 0);
+            return Item.get(AIR, 0, 0);
         } else {
             CompoundTag data = (CompoundTag) this.namedTag.getList("Items").get(i);
             return NBTIO.getItemHelper(data);
@@ -160,7 +164,7 @@ public class BlockEntityBrewingStand extends BlockEntitySpawnable implements Inv
 
         CompoundTag d = NBTIO.putItemHelper(item, index);
 
-        if (item.getId() == Item.AIR || item.getCount() <= 0) {
+        if (item.getId() == AIR || item.getCount() <= 0) {
             if (i >= 0) {
                 this.namedTag.getList("Items").getAll().remove(i);
             }
@@ -192,8 +196,8 @@ public class BlockEntityBrewingStand extends BlockEntitySpawnable implements Inv
         boolean canBrew = false;
 
         Item fuel = this.getInventory().getFuel();
-        if (this.fuelAmount <= 0 && fuel.getId() == Item.BLAZE_POWDER && fuel.getCount() > 0) {
-            fuel.count--;
+        if (this.fuelAmount <= 0 && fuel.getId() == BLAZE_POWDER && fuel.getCount() > 0) {
+            fuel.decrementCount();
             this.fuelAmount = 20;
             this.fuelTotal = 20;
 
@@ -203,7 +207,7 @@ public class BlockEntityBrewingStand extends BlockEntitySpawnable implements Inv
 
         if (this.fuelAmount > 0) {
             for (int i = 1; i <= 3; i++) {
-                if (this.inventory.getItem(i).getId() == Item.POTION) {
+                if (this.inventory.getItem(i).getId() == POTION) {
                     canBrew = true;
                 }
             }
@@ -252,7 +256,7 @@ public class BlockEntityBrewingStand extends BlockEntitySpawnable implements Inv
                     }
                     this.getLevel().addLevelSoundEvent(this, LevelSoundEventPacket.SOUND_POTION_BREWED);
 
-                    ingredient.count--;
+                    ingredient.decrementCount();
                     this.inventory.setIngredient(ingredient);
 
                     this.fuelAmount--;
@@ -308,7 +312,7 @@ public class BlockEntityBrewingStand extends BlockEntitySpawnable implements Inv
     }
 
     public void updateBlock() {
-        Block block = this.getLevelBlock();
+        Block block = this.getBlock();
 
         if (!(block instanceof BlockBrewingStand)) {
             return;
@@ -319,8 +323,8 @@ public class BlockEntityBrewingStand extends BlockEntitySpawnable implements Inv
         for (int i = 1; i <= 3; ++i) {
             Item potion = this.inventory.getItem(i);
 
-            int id = potion.getId();
-            if ((id == Item.POTION || id == Item.SPLASH_POTION || id == Item.LINGERING_POTION) && potion.getCount() > 0) {
+            Identifier id = potion.getId();
+            if ((id == POTION || id == SPLASH_POTION || id == LINGERING_POTION) && potion.getCount() > 0) {
                 meta |= 1 << (i - 1);
             }
         }

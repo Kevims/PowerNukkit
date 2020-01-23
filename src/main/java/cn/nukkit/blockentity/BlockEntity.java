@@ -1,24 +1,24 @@
 package cn.nukkit.blockentity;
 
 import cn.nukkit.Server;
-import cn.nukkit.block.Block;
-import cn.nukkit.level.Position;
-import cn.nukkit.level.format.FullChunk;
-import cn.nukkit.math.Vector3;
+import cn.nukkit.level.BlockPosition;
+import cn.nukkit.level.chunk.Chunk;
+import cn.nukkit.math.Vector3i;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.utils.ChunkException;
-import cn.nukkit.utils.MainLogger;
 import co.aikar.timings.Timing;
 import co.aikar.timings.Timings;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import lombok.extern.log4j.Log4j2;
 
 import java.lang.reflect.Constructor;
 
 /**
  * @author MagicDroidX
  */
-public abstract class BlockEntity extends Position {
+@Log4j2
+public abstract class BlockEntity extends BlockPosition {
     //WARNING: DO NOT CHANGE ANY NAME HERE, OR THE CLIENT WILL CRASH
     public static final String CHEST = "Chest";
     public static final String ENDER_CHEST = "EnderChest";
@@ -56,7 +56,7 @@ public abstract class BlockEntity extends Position {
 
     private static final BiMap<String, Class<? extends BlockEntity>> knownBlockEntities = HashBiMap.create(21);
 
-    public FullChunk chunk;
+    public Chunk chunk;
     public String name;
     public long id;
 
@@ -68,15 +68,15 @@ public abstract class BlockEntity extends Position {
     protected Server server;
     protected Timing timing;
 
-    public BlockEntity(FullChunk chunk, CompoundTag nbt) {
-        if (chunk == null || chunk.getProvider() == null) {
+    public BlockEntity(Chunk chunk, CompoundTag nbt) {
+        if (chunk == null) {
             throw new ChunkException("Invalid garbage Chunk given to Block Entity");
         }
 
         this.timing = Timings.getBlockEntityTiming(this);
-        this.server = chunk.getProvider().getLevel().getServer();
+        this.server = chunk.getLevel().getServer();
         this.chunk = chunk;
-        this.setLevel(chunk.getProvider().getLevel());
+        this.setLevel(chunk.getLevel());
         this.namedTag = nbt;
         this.name = "";
         this.lastUpdate = System.currentTimeMillis();
@@ -100,7 +100,7 @@ public abstract class BlockEntity extends Position {
         return createBlockEntity(type, pos.getLevel().getChunk(pos.getFloorX() >> 4, pos.getFloorZ() >> 4), nbt, args);
     }
 
-    public static BlockEntity createBlockEntity(String type, FullChunk chunk, CompoundTag nbt, Object... args) {
+    public static BlockEntity createBlockEntity(String type, Chunk chunk, CompoundTag nbt, Object... args) {
         type = type.replaceFirst("BlockEntity", ""); //TODO: Remove this after the first release
         BlockEntity blockEntity = null;
 
@@ -133,7 +133,7 @@ public abstract class BlockEntity extends Position {
 
                     }
                 } catch (Exception e) {
-                    MainLogger.getLogger().logException(e);
+                    log.error("Error whilst constructing block entity", e);
                 }
 
             }
@@ -178,10 +178,6 @@ public abstract class BlockEntity extends Position {
         }
     }
 
-    public Block getBlock() {
-        return this.getLevelBlock();
-    }
-
     public abstract boolean isBlockEntityValid();
 
     public boolean onUpdate() {
@@ -214,7 +210,7 @@ public abstract class BlockEntity extends Position {
     }
 
     public void setDirty() {
-        chunk.setChanged();
+        chunk.setDirty();
     }
 
     public String getName() {
@@ -225,11 +221,11 @@ public abstract class BlockEntity extends Position {
         return movable;
     }
 
-    public static CompoundTag getDefaultCompound(Vector3 pos, String id) {
+    public static CompoundTag getDefaultCompound(Vector3i pos, String id) {
         return new CompoundTag("")
                 .putString("id", id)
-                .putInt("x", pos.getFloorX())
-                .putInt("y", pos.getFloorY())
-                .putInt("z", pos.getFloorZ());
+                .putInt("x", pos.getX())
+                .putInt("y", pos.getY())
+                .putInt("z", pos.getZ());
     }
 }

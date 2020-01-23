@@ -1,18 +1,18 @@
 package cn.nukkit.blockentity;
 
-import cn.nukkit.block.Block;
-import cn.nukkit.level.format.FullChunk;
+import cn.nukkit.block.BlockIds;
+import cn.nukkit.level.chunk.Chunk;
 import cn.nukkit.nbt.tag.CompoundTag;
 
 public class BlockEntityEnderChest extends BlockEntitySpawnable {
 
-    public BlockEntityEnderChest(FullChunk chunk, CompoundTag nbt) {
+    public BlockEntityEnderChest(Chunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
     }
 
     @Override
     public boolean isBlockEntityValid() {
-        return this.getBlock().getId() == Block.ENDER_CHEST;
+        return this.getBlock().getId() == BlockIds.ENDER_CHEST;
     }
 
     @Override

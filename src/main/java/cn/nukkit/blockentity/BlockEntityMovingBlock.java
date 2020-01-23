@@ -1,9 +1,10 @@
 package cn.nukkit.blockentity;
 
 import cn.nukkit.block.Block;
-import cn.nukkit.level.format.FullChunk;
-import cn.nukkit.math.BlockVector3;
+import cn.nukkit.level.chunk.Chunk;
+import cn.nukkit.math.Vector3i;
 import cn.nukkit.nbt.tag.CompoundTag;
+import cn.nukkit.registry.BlockRegistry;
 
 /**
  * Created by CreeperFace on 11.4.2017.
@@ -12,10 +13,10 @@ public class BlockEntityMovingBlock extends BlockEntitySpawnable {
 
     public Block block;
 
-    public BlockVector3 piston;
+    public Vector3i piston;
     public int progress;
 
-    public BlockEntityMovingBlock(FullChunk chunk, CompoundTag nbt) {
+    public BlockEntityMovingBlock(Chunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
     }
 
@@ -28,7 +29,7 @@ public class BlockEntityMovingBlock extends BlockEntitySpawnable {
         }
 
         if (namedTag.contains("pistonPosX") && namedTag.contains("pistonPosY") && namedTag.contains("pistonPosZ")) {
-            this.piston = new BlockVector3(namedTag.getInt("pistonPosX"), namedTag.getInt("pistonPosY"), namedTag.getInt("pistonPosZ"));
+            this.piston = new Vector3i(namedTag.getInt("pistonPosX"), namedTag.getInt("pistonPosY"), namedTag.getInt("pistonPosZ"));
         } else {
             this.close();
         }
@@ -48,7 +49,7 @@ public class BlockEntityMovingBlock extends BlockEntitySpawnable {
     @Override
     public CompoundTag getSpawnCompound() {
         return getDefaultCompound(this, MOVING_BLOCK)
-                .putFloat("movingBlockId", this.block.getId())
+                .putFloat("movingBlockId", BlockRegistry.get().getLegacyId(this.block.getId()))
                 .putFloat("movingBlockData", this.block.getDamage())
                 .putInt("pistonPosX", this.piston.x)
                 .putInt("pistonPosY", this.piston.y)

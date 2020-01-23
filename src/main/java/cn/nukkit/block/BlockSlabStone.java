@@ -1,9 +1,11 @@
 package cn.nukkit.block;
 
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemBlock;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.DOUBLE_STONE_SLAB;
 
 /**
  * Created by CreeperFace on 26. 11. 2016.
@@ -18,33 +20,8 @@ public class BlockSlabStone extends BlockSlab {
     public static final int QUARTZ = 6;
     public static final int NETHER_BRICK = 7;
 
-    public BlockSlabStone() {
-        this(0);
-    }
-
-    public BlockSlabStone(int meta) {
-        super(meta, DOUBLE_STONE_SLAB);
-    }
-
-    @Override
-    public int getId() {
-        return STONE_SLAB;
-    }
-
-    @Override
-    public String getName() {
-        String[] names = new String[]{
-                "Smooth Stone",
-                "Sandstone",
-                "Wooden",
-                "Cobblestone",
-                "Brick",
-                "Stone Brick",
-                "Quartz",
-                "Nether Brick"
-        };
-
-        return ((this.getDamage() & 0x08) > 0 ? "Upper " : "") + names[this.getDamage() & 0x07] + " Slab";
+    public BlockSlabStone(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -60,7 +37,7 @@ public class BlockSlabStone extends BlockSlab {
 
     @Override
     public Item toItem() {
-        return new ItemBlock(this, this.getDamage() & 0x07);
+        return Item.get(id, this.getDamage() & 0x07);
     }
 
     @Override
@@ -91,5 +68,10 @@ public class BlockSlabStone extends BlockSlab {
     @Override
     public boolean canHarvestWithHand() {
         return false;
+    }
+
+    @Override
+    protected Identifier getDoubleSlab() {
+        return DOUBLE_STONE_SLAB;
     }
 }

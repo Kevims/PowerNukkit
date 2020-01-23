@@ -3,20 +3,14 @@ package cn.nukkit.block;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.END_BRICKS;
 
 public class BlockBricksEndStone extends BlockSolid {
 
-    public BlockBricksEndStone() {
-    }
-
-    @Override
-    public String getName() {
-        return "End Stone Bricks";
-    }
-
-    @Override
-    public int getId() {
-        return END_BRICKS;
+    public BlockBricksEndStone(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -38,7 +32,7 @@ public class BlockBricksEndStone extends BlockSolid {
     public Item[] getDrops(Item item) {
         if (item.isPickaxe() && item.getTier() >= ItemTool.TIER_WOODEN) {
             return new Item[]{
-                    Item.get(Item.END_BRICKS, 0, 1)
+                    Item.get(END_BRICKS, 0, 1)
             };
         } else {
             return new Item[0];

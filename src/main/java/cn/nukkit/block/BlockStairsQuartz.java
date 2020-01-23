@@ -2,23 +2,15 @@ package cn.nukkit.block;
 
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 /**
  * Created on 2015/11/25 by xtypr.
  * Package cn.nukkit.block in project Nukkit .
  */
 public class BlockStairsQuartz extends BlockStairs {
-    public BlockStairsQuartz() {
-        this(0);
-    }
-
-    public BlockStairsQuartz(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public int getId() {
-        return QUARTZ_STAIRS;
+    public BlockStairsQuartz(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -34,11 +26,6 @@ public class BlockStairsQuartz extends BlockStairs {
     @Override
     public int getToolType() {
         return ItemTool.TYPE_PICKAXE;
-    }
-
-    @Override
-    public String getName() {
-        return "Quartz Stairs";
     }
 
     @Override

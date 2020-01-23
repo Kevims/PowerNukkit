@@ -1,18 +1,20 @@
 package cn.nukkit.item;
 
-import cn.nukkit.Player;
 import cn.nukkit.block.Block;
-import cn.nukkit.entity.Entity;
-import cn.nukkit.entity.item.EntityPainting;
+import cn.nukkit.entity.EntityTypes;
+import cn.nukkit.entity.impl.misc.EntityPainting;
+import cn.nukkit.entity.misc.Painting;
 import cn.nukkit.level.Level;
-import cn.nukkit.level.format.FullChunk;
+import cn.nukkit.level.chunk.Chunk;
 import cn.nukkit.math.BlockFace;
-import cn.nukkit.math.Vector3;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.DoubleTag;
 import cn.nukkit.nbt.tag.FloatTag;
 import cn.nukkit.nbt.tag.ListTag;
-import cn.nukkit.utils.MainLogger;
+import cn.nukkit.player.Player;
+import cn.nukkit.registry.EntityRegistry;
+import cn.nukkit.utils.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,16 +29,8 @@ public class ItemPainting extends Item {
     private static final int[] RIGHT = {4, 5, 3, 2};
     private static final double OFFSET = 0.53125;
 
-    public ItemPainting() {
-        this(0, 1);
-    }
-
-    public ItemPainting(Integer meta) {
-        this(meta, 1);
-    }
-
-    public ItemPainting(Integer meta, int count) {
-        super(PAINTING, 0, count, "Painting");
+    public ItemPainting(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -45,8 +39,8 @@ public class ItemPainting extends Item {
     }
 
     @Override
-    public boolean onActivate(Level level, Player player, Block block, Block target, BlockFace face, double fx, double fy, double fz) {
-        FullChunk chunk = level.getChunk((int) block.getX() >> 4, (int) block.getZ() >> 4);
+    public boolean onActivate(Level level, Player player, Block block, Block target, BlockFace face, Vector3f clickPos) {
+        Chunk chunk = level.getChunk(block.getChunkX(), block.getChunkZ());
 
         if (chunk == null || target.isTransparent() || face.getHorizontalIndex() == -1 || block.isSolid()) {
             return false;
@@ -73,7 +67,7 @@ public class ItemPainting extends Item {
         int direction = DIRECTION[face.getIndex() - 2];
         EntityPainting.Motive motive = validMotives.get(ThreadLocalRandom.current().nextInt(validMotives.size()));
 
-        Vector3 position = new Vector3(target.x + 0.5, target.y + 0.5, target.z + 0.5);
+        Vector3f position = new Vector3f(target.x + 0.5, target.y + 0.5, target.z + 0.5);
         double widthOffset = offset(motive.width);
 
         switch (face.getHorizontalIndex()) {
@@ -111,11 +105,7 @@ public class ItemPainting extends Item {
                         .add(new FloatTag("0", direction * 90))
                         .add(new FloatTag("1", 0)));
 
-        EntityPainting entity = (EntityPainting) Entity.createEntity("Painting", chunk, nbt);
-
-        if (entity == null) {
-            return false;
-        }
+        Painting entity = EntityRegistry.get().newEntity(EntityTypes.PAINTING, chunk, nbt);
 
         if (player.isSurvival()) {
             Item item = player.getInventory().getItemInHand();

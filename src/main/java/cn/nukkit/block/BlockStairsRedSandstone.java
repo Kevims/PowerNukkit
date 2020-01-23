@@ -1,26 +1,17 @@
 package cn.nukkit.block;
 
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemBlock;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 /**
  * Created by CreeperFace on 26. 11. 2016.
  */
 public class BlockStairsRedSandstone extends BlockStairs {
 
-    public BlockStairsRedSandstone() {
-        this(0);
-    }
-
-    public BlockStairsRedSandstone(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public int getId() {
-        return RED_SANDSTONE_STAIRS;
+    public BlockStairsRedSandstone(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -39,11 +30,6 @@ public class BlockStairsRedSandstone extends BlockStairs {
     }
 
     @Override
-    public String getName() {
-        return "Red Sandstone Stairs";
-    }
-
-    @Override
     public Item[] getDrops(Item item) {
         if (item.isPickaxe() && item.getTier() >= ItemTool.TIER_WOODEN) {
             return new Item[]{
@@ -56,7 +42,7 @@ public class BlockStairsRedSandstone extends BlockStairs {
 
     @Override
     public Item toItem() {
-        return new ItemBlock(this, this.getDamage() & 0x07);
+        return Item.get(id, this.getDamage() & 0x07);
     }
 
     @Override

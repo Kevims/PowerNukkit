@@ -1,34 +1,26 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemString;
+import cn.nukkit.item.ItemIds;
 import cn.nukkit.level.Level;
 import cn.nukkit.math.AxisAlignedBB;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.player.Player;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.AIR;
+import static cn.nukkit.block.BlockIds.TRIPWIRE;
+import static cn.nukkit.item.ItemIds.SHEARS;
 
 /**
  * @author CreeperFace
  */
-public class BlockTripWire extends BlockFlowable {
+public class BlockTripWire extends FloodableBlock {
 
-    public BlockTripWire(int meta) {
-        super(meta);
-    }
-
-    public BlockTripWire() {
-        this(0);
-    }
-
-    @Override
-    public int getId() {
-        return TRIPWIRE;
-    }
-
-    @Override
-    public String getName() {
-        return "Tripwire";
+    public BlockTripWire(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -63,7 +55,7 @@ public class BlockTripWire extends BlockFlowable {
 
     @Override
     public Item toItem() {
-        return new ItemString();
+        return Item.get(ItemIds.STRING);
     }
 
     public boolean isPowered() {
@@ -98,7 +90,7 @@ public class BlockTripWire extends BlockFlowable {
 
     @Override
     public void onEntityCollide(Entity entity) {
-        if (!entity.doesTriggerPressurePlate()) {
+        if (!entity.canTriggerPressurePlate()) {
             return;
         }
 
@@ -131,7 +123,7 @@ public class BlockTripWire extends BlockFlowable {
                     break;
                 }
 
-                if (block.getId() != Block.TRIPWIRE) {
+                if (block.getId() != TRIPWIRE) {
                     break;
                 }
             }
@@ -147,7 +139,7 @@ public class BlockTripWire extends BlockFlowable {
 
             boolean found = false;
             for (Entity entity : this.level.getCollidingEntities(this.getCollisionBoundingBox())) {
-                if (!entity.doesTriggerPressurePlate()) {
+                if (!entity.canTriggerPressurePlate()) {
                     continue;
                 }
 
@@ -168,7 +160,7 @@ public class BlockTripWire extends BlockFlowable {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         this.getLevel().setBlock(this, this, true, true);
         this.updateHook(false);
 
@@ -177,14 +169,14 @@ public class BlockTripWire extends BlockFlowable {
 
     @Override
     public boolean onBreak(Item item) {
-        if (item.getId() == Item.SHEARS) {
+        if (item.getId() == SHEARS) {
             this.setDisarmed(true);
             this.level.setBlock(this, this, true, false);
             this.updateHook(false);
-            this.getLevel().setBlock(this, new BlockAir(), true, true);
+            this.getLevel().setBlock(this, Block.get(AIR), true, true);
         } else {
             this.setPowered(true);
-            this.getLevel().setBlock(this, new BlockAir(), true, true);
+            this.getLevel().setBlock(this, Block.get(AIR), true, true);
             this.updateHook(true);
         }
 

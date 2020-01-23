@@ -1,25 +1,26 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.generator.object.mushroom.BigMushroom;
 import cn.nukkit.level.particle.BoneMealParticle;
+import cn.nukkit.math.BedrockRandom;
 import cn.nukkit.math.BlockFace;
-import cn.nukkit.math.NukkitRandom;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
 import cn.nukkit.utils.DyeColor;
+import cn.nukkit.utils.Identifier;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-public abstract class BlockMushroom extends BlockFlowable {
+import static cn.nukkit.block.BlockIds.*;
+import static cn.nukkit.item.ItemIds.DYE;
 
-    public BlockMushroom() {
-        this(0);
-    }
+public abstract class BlockMushroom extends FloodableBlock {
 
-    public BlockMushroom(int meta) {
-        super(0);
+    public BlockMushroom(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -35,7 +36,7 @@ public abstract class BlockMushroom extends BlockFlowable {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         if (canStay()) {
             getLevel().setBlock(block, this, true, true);
             return true;
@@ -50,9 +51,9 @@ public abstract class BlockMushroom extends BlockFlowable {
 
     @Override
     public boolean onActivate(Item item, Player player) {
-        if (item.getId() == Item.DYE && item.getDamage() == DyeColor.WHITE.getDyeData()) {
+        if (item.getId() == DYE && item.getDamage() == DyeColor.WHITE.getDyeData()) {
             if (player != null && (player.gamemode & 0x01) == 0) {
-                item.count--;
+                item.decrementCount();
             }
 
             if (ThreadLocalRandom.current().nextFloat() < 0.4) {
@@ -66,11 +67,11 @@ public abstract class BlockMushroom extends BlockFlowable {
     }
 
     public boolean grow() {
-        this.level.setBlock(this, new BlockAir(), true, false);
+        this.level.setBlock(this, Block.get(AIR), true, false);
 
         BigMushroom generator = new BigMushroom(getType());
 
-        if (generator.generate(this.level, new NukkitRandom(), this)) {
+        if (generator.generate(this.level, new BedrockRandom(), this.asVector3i())) {
             return true;
         } else {
             this.level.setBlock(this, this, true, false);

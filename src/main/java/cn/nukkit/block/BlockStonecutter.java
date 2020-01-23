@@ -2,21 +2,12 @@ package cn.nukkit.block;
 
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemTool;
+import cn.nukkit.utils.Identifier;
 
 public class BlockStonecutter extends BlockSolid {
 
-    public BlockStonecutter() {
-
-    }
-
-    @Override
-    public int getId() {
-        return STONECUTTER;
-    }
-
-    @Override
-    public String getName() {
-        return "Stonecutter";
+    public BlockStonecutter(Identifier id) {
+        super(id);
     }
 
     @Override

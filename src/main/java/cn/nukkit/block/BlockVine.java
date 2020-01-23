@@ -1,37 +1,24 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemBlock;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.level.Level;
 import cn.nukkit.math.AxisAlignedBB;
 import cn.nukkit.math.BlockFace;
 import cn.nukkit.math.SimpleAxisAlignedBB;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 /**
  * Created by Pub4Game on 15.01.2016.
  */
-public class BlockVine extends BlockTransparentMeta {
+public class BlockVine extends BlockTransparent {
 
-    public BlockVine(int meta) {
-        super(meta);
-    }
-
-    public BlockVine() {
-        this(0);
-    }
-
-    @Override
-    public String getName() {
-        return "Vines";
-    }
-
-    @Override
-    public int getId() {
-        return VINE;
+    public BlockVine(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -77,7 +64,7 @@ public class BlockVine extends BlockTransparentMeta {
     @Override
     public void onEntityCollide(Entity entity) {
         entity.resetFallDistance();
-        entity.onGround = true;
+        entity.setOnGround(true);
     }
 
     @Override
@@ -140,7 +127,7 @@ public class BlockVine extends BlockTransparentMeta {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         if (target.isSolid() && face.getHorizontalIndex() != -1) {
             this.setDamage(getMetaFromFace(face.getOpposite()));
             this.getLevel().setBlock(block, this, true, true);
@@ -163,7 +150,7 @@ public class BlockVine extends BlockTransparentMeta {
 
     @Override
     public Item toItem() {
-        return new ItemBlock(this, 0);
+        return Item.get(id, 0);
     }
 
     @Override

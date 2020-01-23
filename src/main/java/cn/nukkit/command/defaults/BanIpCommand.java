@@ -1,6 +1,5 @@
 package cn.nukkit.command.defaults;
 
-import cn.nukkit.Player;
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.command.data.CommandParamType;
@@ -9,10 +8,13 @@ import cn.nukkit.event.player.PlayerKickEvent;
 import cn.nukkit.lang.TranslationContainer;
 import cn.nukkit.nbt.NBTIO;
 import cn.nukkit.nbt.tag.CompoundTag;
+import cn.nukkit.player.Player;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
@@ -101,6 +103,10 @@ public class BanIpCommand extends VanillaCommand {
             }
         }
 
-        sender.getServer().getNetwork().blockAddress(ip, -1);
+        try {
+            sender.getServer().getNetwork().blockAddress(InetAddress.getByName(ip), -1);
+        } catch (UnknownHostException e) {
+            // ignore
+        }
     }
 }

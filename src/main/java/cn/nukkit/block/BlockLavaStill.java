@@ -1,6 +1,9 @@
 package cn.nukkit.block;
 
 import cn.nukkit.level.Level;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.LAVA;
 
 /**
  * author: Angelic47
@@ -8,27 +11,13 @@ import cn.nukkit.level.Level;
  */
 public class BlockLavaStill extends BlockLava {
 
-    public BlockLavaStill() {
-        super(0);
-    }
-
-    public BlockLavaStill(int meta) {
-        super(meta);
+    public BlockLavaStill(Identifier id) {
+        super(id);
     }
 
     @Override
-    public int getId() {
-        return STILL_LAVA;
-    }
-
-    @Override
-    public String getName() {
-        return "Still Lava";
-    }
-
-    @Override
-    public BlockLiquid getBlock(int meta) {
-        return new BlockLavaStill(meta);
+    public Block getBlock(int meta) {
+        return Block.get(LAVA);
     }
 
     @Override

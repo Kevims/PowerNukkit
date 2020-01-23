@@ -1,24 +1,23 @@
 package cn.nukkit.inventory;
 
-import cn.nukkit.Player;
 import cn.nukkit.block.BlockEnderChest;
-import cn.nukkit.entity.EntityHuman;
-import cn.nukkit.entity.EntityHumanType;
+import cn.nukkit.entity.impl.Human;
 import cn.nukkit.level.Level;
 import cn.nukkit.network.protocol.BlockEventPacket;
 import cn.nukkit.network.protocol.ContainerClosePacket;
 import cn.nukkit.network.protocol.ContainerOpenPacket;
 import cn.nukkit.network.protocol.LevelSoundEventPacket;
+import cn.nukkit.player.Player;
 
 public class PlayerEnderChestInventory extends BaseInventory {
 
-    public PlayerEnderChestInventory(EntityHumanType player) {
+    public PlayerEnderChestInventory(Human player) {
         super(player, InventoryType.ENDER_CHEST);
     }
 
     @Override
-    public EntityHuman getHolder() {
-        return (EntityHuman) this.holder;
+    public Human getHolder() {
+        return (Human) this.holder;
     }
 
     @Override
@@ -54,7 +53,7 @@ public class PlayerEnderChestInventory extends BaseInventory {
             Level level = this.getHolder().getLevel();
             if (level != null) {
                 level.addLevelSoundEvent(this.getHolder().add(0.5, 0.5, 0.5), LevelSoundEventPacket.SOUND_ENDERCHEST_OPEN);
-                level.addChunkPacket((int) this.getHolder().getX() >> 4, (int) this.getHolder().getZ() >> 4, blockEventPacket);
+                level.addChunkPacket(this.getHolder().getChunkX(), this.getHolder().getChunkZ(), blockEventPacket);
             }
         }
     }
@@ -78,7 +77,7 @@ public class PlayerEnderChestInventory extends BaseInventory {
             Level level = this.getHolder().getLevel();
             if (level != null) {
                 level.addLevelSoundEvent(this.getHolder().add(0.5, 0.5, 0.5), LevelSoundEventPacket.SOUND_ENDERCHEST_CLOSED);
-                level.addChunkPacket((int) this.getHolder().getX() >> 4, (int) this.getHolder().getZ() >> 4, blockEventPacket);
+                level.addChunkPacket(this.getHolder().getChunkX(), this.getHolder().getChunkZ(), blockEventPacket);
             }
 
             who.setViewingEnderChest(null);

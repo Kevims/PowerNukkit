@@ -1,31 +1,24 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemBlock;
 import cn.nukkit.math.BlockFace;
 import cn.nukkit.network.protocol.LevelSoundEventPacket;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
 import cn.nukkit.utils.Faceable;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.item.ItemIds.ENDER_EYE;
 
 /**
  * Created by Pub4Game on 26.12.2015.
  */
-public class BlockEndPortalFrame extends BlockTransparentMeta implements Faceable {
-
+public class BlockEndPortalFrame extends BlockTransparent implements Faceable {
+    
     private static final int[] FACES = {2, 3, 0, 1};
 
-    public BlockEndPortalFrame() {
-        this(0);
-    }
-
-    public BlockEndPortalFrame(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public int getId() {
-        return END_PORTAL_FRAME;
+    public BlockEndPortalFrame(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -46,11 +39,6 @@ public class BlockEndPortalFrame extends BlockTransparentMeta implements Faceabl
     @Override
     public int getWaterloggingLevel() {
         return 1;
-    }
-
-    @Override
-    public String getName() {
-        return "End Portal Frame";
     }
 
     @Override
@@ -83,7 +71,7 @@ public class BlockEndPortalFrame extends BlockTransparentMeta implements Faceabl
 
     @Override
     public boolean onActivate(Item item, Player player) {
-        if((this.getDamage() & 0x04) == 0 && player != null && item.getId() == Item.ENDER_EYE) {
+        if ((this.getDamage() & 0x04) == 0 && player != null && item.getId() == ENDER_EYE) {
             this.setDamage(this.getDamage() + 4);
             this.getLevel().setBlock(this, this, true, true);
             this.getLevel().addLevelSoundEvent(this, LevelSoundEventPacket.SOUND_BLOCK_END_PORTAL_FRAME_FILL);
@@ -100,7 +88,7 @@ public class BlockEndPortalFrame extends BlockTransparentMeta implements Faceabl
 
     @Override
     public Item toItem() {
-        return new ItemBlock(this, 0);
+        return Item.get(id, 0);
     }
 
     @Override

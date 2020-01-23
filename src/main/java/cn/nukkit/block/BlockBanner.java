@@ -1,39 +1,35 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.blockentity.BlockEntity;
 import cn.nukkit.blockentity.BlockEntityBanner;
-import cn.nukkit.blockentity.BlockEntityBed;
 import cn.nukkit.item.Item;
+import cn.nukkit.item.ItemIds;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.level.Level;
 import cn.nukkit.math.AxisAlignedBB;
 import cn.nukkit.math.BlockFace;
 import cn.nukkit.math.NukkitMath;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.IntTag;
 import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.nbt.tag.Tag;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
 import cn.nukkit.utils.DyeColor;
 import cn.nukkit.utils.Faceable;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.AIR;
+import static cn.nukkit.block.BlockIds.WALL_BANNER;
 
 /**
  * Created by PetteriM1
  */
-public class BlockBanner extends BlockTransparentMeta implements Faceable {
+public class BlockBanner extends BlockTransparent implements Faceable {
 
-    public BlockBanner() {
-        this(0);
-    }
-
-    public BlockBanner(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public int getId() {
-        return STANDING_BANNER;
+    public BlockBanner(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -52,11 +48,6 @@ public class BlockBanner extends BlockTransparentMeta implements Faceable {
     }
 
     @Override
-    public String getName() {
-        return "Banner";
-    }
-
-    @Override
     protected AxisAlignedBB recalculateBoundingBox() {
         return null;
     }
@@ -72,14 +63,14 @@ public class BlockBanner extends BlockTransparentMeta implements Faceable {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         if (face != BlockFace.DOWN) {
             if (face == BlockFace.UP) {
                 this.setDamage(NukkitMath.floorDouble(((player.yaw + 180) * 16 / 360) + 0.5) & 0x0f);
                 this.getLevel().setBlock(block, this, true);
             } else {
                 this.setDamage(face.getIndex());
-                this.getLevel().setBlock(block, new BlockWallBanner(this.getDamage()), true);
+                this.getLevel().setBlock(block, Block.get(WALL_BANNER, this.getDamage()), true);
             }
 
             CompoundTag nbt = BlockEntity.getDefaultCompound(this, BlockEntity.BANNER)
@@ -94,8 +85,9 @@ public class BlockBanner extends BlockTransparentMeta implements Faceable {
                 nbt.put("Patterns", patterns);
             }
 
-            BlockEntityBanner banner = (BlockEntityBanner) BlockEntity.createBlockEntity(BlockEntity.BANNER, this.getChunk(), nbt);
-            return banner != null;
+            new BlockEntityBanner(this.getChunk(), nbt);
+
+            return true;
         }
         return false;
     }
@@ -103,7 +95,7 @@ public class BlockBanner extends BlockTransparentMeta implements Faceable {
     @Override
     public int onUpdate(int type) {
         if (type == Level.BLOCK_UPDATE_NORMAL) {
-            if (this.down().getId() == Block.AIR) {
+            if (this.down().getId() == AIR) {
                 this.getLevel().useBreakOn(this);
 
                 return Level.BLOCK_UPDATE_NORMAL;
@@ -116,7 +108,7 @@ public class BlockBanner extends BlockTransparentMeta implements Faceable {
     @Override
     public Item toItem() {
         BlockEntity blockEntity = this.getLevel().getBlockEntity(this);
-        Item item = Item.get(Item.BANNER);
+        Item item = Item.get(ItemIds.BANNER);
         if (blockEntity instanceof BlockEntityBanner) {
             BlockEntityBanner banner = (BlockEntityBanner) blockEntity;
             item.setDamage(banner.getBaseColor() & 0xf);

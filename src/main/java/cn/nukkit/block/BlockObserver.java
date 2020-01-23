@@ -1,36 +1,24 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.Faceable;
+import cn.nukkit.utils.Identifier;
 
 /**
  * Created by Leonidius20 on 18.08.18.
  */
-public class BlockObserver extends BlockSolidMeta implements Faceable {
+public class BlockObserver extends BlockSolid implements Faceable {
 
-    public BlockObserver() {
-        this(0);
-    }
-
-    public BlockObserver(int meta) {
-        super(meta);
+    public BlockObserver(Identifier id) {
+        super(id);
     }
 
     @Override
-    public String getName() {
-        return "Observer";
-    }
-
-    @Override
-    public int getId() {
-        return OBSERVER;
-    }
-
-    @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         if (player != null) {
             if (Math.abs(player.getFloorX() - this.x) <= 1 && Math.abs(player.getFloorZ() - this.z) <= 1) {
                 double y = player.y + player.getEyeHeight();

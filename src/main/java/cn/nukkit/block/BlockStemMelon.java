@@ -3,34 +3,23 @@ package cn.nukkit.block;
 import cn.nukkit.Server;
 import cn.nukkit.event.block.BlockGrowEvent;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemSeedsMelon;
+import cn.nukkit.item.ItemIds;
 import cn.nukkit.level.Level;
+import cn.nukkit.math.BedrockRandom;
 import cn.nukkit.math.BlockFace;
 import cn.nukkit.math.BlockFace.Plane;
 import cn.nukkit.math.NukkitRandom;
-import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.*;
 
 /**
  * Created by Pub4Game on 15.01.2016.
  */
 public class BlockStemMelon extends BlockCrops {
 
-    public BlockStemMelon() {
-        this(0);
-    }
-
-    public BlockStemMelon(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public int getId() {
-        return MELON_STEM;
-    }
-
-    @Override
-    public String getName() {
-        return "Melon Stem";
+    public BlockStemMelon(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -41,8 +30,8 @@ public class BlockStemMelon extends BlockCrops {
                 return Level.BLOCK_UPDATE_NORMAL;
             }
         } else if (type == Level.BLOCK_UPDATE_RANDOM) {
-            NukkitRandom random = new NukkitRandom();
-            if (random.nextRange(1, 2) == 1) {
+            BedrockRandom random = new BedrockRandom();
+            if (random.nextBoolean()) {
                 if (this.getDamage() < 0x07) {
                     Block block = this.clone();
                     block.setDamage(block.getDamage() + 1);
@@ -62,7 +51,7 @@ public class BlockStemMelon extends BlockCrops {
                     Block side = this.getSide(Plane.HORIZONTAL.random(random));
                     Block d = side.down();
                     if (side.getId() == AIR && (d.getId() == FARMLAND || d.getId() == GRASS || d.getId() == DIRT)) {
-                        BlockGrowEvent ev = new BlockGrowEvent(side, new BlockMelon());
+                        BlockGrowEvent ev = new BlockGrowEvent(side, Block.get(MELON_BLOCK));
                         Server.getInstance().getPluginManager().callEvent(ev);
                         if (!ev.isCancelled()) {
                             this.getLevel().setBlock(side, ev.getNewState(), true);
@@ -77,14 +66,14 @@ public class BlockStemMelon extends BlockCrops {
 
     @Override
     public Item toItem() {
-        return new ItemSeedsMelon();
+        return Item.get(ItemIds.MELON_SEEDS);
     }
 
     @Override
     public Item[] getDrops(Item item) {
         NukkitRandom random = new NukkitRandom();
         return new Item[]{
-                new ItemSeedsMelon(0, random.nextRange(0, 3))
+                Item.get(ItemIds.MELON_SEEDS, 0, random.nextRange(0, 3))
         };
     }
 }

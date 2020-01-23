@@ -2,6 +2,7 @@ package cn.nukkit.block;
 
 import cn.nukkit.item.Item;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 /**
  * author: Angelic47
@@ -9,17 +10,8 @@ import cn.nukkit.utils.BlockColor;
  */
 public class BlockGlass extends BlockTransparent {
 
-    public BlockGlass() {
-    }
-
-    @Override
-    public int getId() {
-        return GLASS;
-    }
-
-    @Override
-    public String getName() {
-        return "Glass";
+    public BlockGlass(Identifier id) {
+        super(id);
     }
 
     @Override

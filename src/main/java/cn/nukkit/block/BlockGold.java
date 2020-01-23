@@ -3,6 +3,7 @@ package cn.nukkit.block;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 /**
  * author: Angelic47
@@ -10,18 +11,8 @@ import cn.nukkit.utils.BlockColor;
  */
 public class BlockGold extends BlockSolid {
 
-
-    public BlockGold() {
-    }
-
-    @Override
-    public int getId() {
-        return GOLD_BLOCK;
-    }
-
-    @Override
-    public String getName() {
-        return "Gold Block";
+    public BlockGold(Identifier id) {
+        super(id);
     }
 
     @Override

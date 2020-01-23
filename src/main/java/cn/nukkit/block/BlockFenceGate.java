@@ -1,37 +1,25 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.event.block.DoorToggleEvent;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.Sound;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
 import cn.nukkit.utils.Faceable;
+import cn.nukkit.utils.Identifier;
 
 /**
  * Created on 2015/11/23 by xtypr.
  * Package cn.nukkit.block in project Nukkit .
  */
-public class BlockFenceGate extends BlockTransparentMeta implements Faceable {
+public class BlockFenceGate extends BlockTransparent implements Faceable {
 
-    public BlockFenceGate() {
-        this(0);
-    }
-
-    public BlockFenceGate(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public int getId() {
-        return FENCE_GATE_OAK;
-    }
-
-    @Override
-    public String getName() {
-        return "Oak Fence Gate";
+    public BlockFenceGate(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -107,7 +95,7 @@ public class BlockFenceGate extends BlockTransparentMeta implements Faceable {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         this.setDamage(player != null ? player.getDirection().getHorizontalIndex() : 0);
         this.getLevel().setBlock(block, this, true, true);
 
@@ -124,7 +112,7 @@ public class BlockFenceGate extends BlockTransparentMeta implements Faceable {
             return false;
         }
 
-        this.level.addSound(this, isOpen() ? Sound.RANDOM_DOOR_OPEN : Sound.RANDOM_DOOR_CLOSE);
+        this.level.addSound(this.asVector3f(), isOpen() ? Sound.RANDOM_DOOR_OPEN : Sound.RANDOM_DOOR_CLOSE);
         return true;
     }
 
@@ -190,18 +178,13 @@ public class BlockFenceGate extends BlockTransparentMeta implements Faceable {
     @Override
     public int onUpdate(int type) {
         if (type == Level.BLOCK_UPDATE_REDSTONE) {
-            if ((!isOpen() && this.level.isBlockPowered(this.getLocation())) || (isOpen() && !this.level.isBlockPowered(this.getLocation()))) {
+            if ((!isOpen() && this.level.isBlockPowered(this.asVector3i())) || (isOpen() && !this.level.isBlockPowered(this.asVector3i()))) {
                 this.toggle(null);
                 return type;
             }
         }
 
         return 0;
-    }
-
-    @Override
-    public Item toItem() {
-        return Item.get(Item.FENCE_GATE, 0, 1);
     }
 
     @Override

@@ -1,13 +1,18 @@
 package cn.nukkit.utils;
 
+import cn.nukkit.entity.data.Skin;
 import cn.nukkit.network.protocol.LoginPacket;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import net.minidev.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
@@ -44,13 +49,9 @@ public final class ClientChainData implements LoginChainData {
         }
     }
 
-    public static ClientChainData of(byte[] buffer) {
-        return new ClientChainData(buffer);
-    }
-
-    public static ClientChainData read(LoginPacket pk) {
-        return of(pk.getBuffer());
-    }
+    private final String chainData;
+    private final String skinData;
+    private Skin skin;
 
     @Override
     public String getUsername() {
@@ -124,9 +125,11 @@ public final class ClientChainData implements LoginChainData {
         return defaultInputMode;
     }
 
-    @Override
-    public String getCapeData() {
-        return capeData;
+    private ClientChainData(String chainData, String skinData) {
+        this.chainData = chainData;
+        this.skinData = skinData;
+        decodeChainData(chainData);
+        decodeSkinData(skinData);
     }
 
     public final static int UI_PROFILE_CLASSIC = 0;
@@ -141,14 +144,13 @@ public final class ClientChainData implements LoginChainData {
     // Override
     ///////////////////////////////////////////////////////////////////////////
 
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof ClientChainData && Objects.equals(bs, ((ClientChainData) obj).bs);
+    public static ClientChainData of(byte[] buffer) {
+        ByteBuf byteBuf = Unpooled.wrappedBuffer(buffer);
+        return new ClientChainData(readString(byteBuf), readString(byteBuf));
     }
 
-    @Override
-    public int hashCode() {
-        return bs.hashCode();
+    public static ClientChainData read(LoginPacket pk) {
+        return new ClientChainData(pk.chainData, pk.skinData);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -177,14 +179,29 @@ public final class ClientChainData implements LoginChainData {
 
     private int UIProfile;
 
-    private String capeData;
+    private static String readString(ByteBuf buffer) {
+        int length = buffer.readIntLE();
+        byte[] bytes = new byte[length];
+        buffer.readBytes(bytes);
+        return new String(bytes, StandardCharsets.US_ASCII); // base 64 encoded.
+    }
 
-    private BinaryStream bs = new BinaryStream();
+    @Override
+    public Skin getSkin() {
+        return skin;
+    }
 
-    private ClientChainData(byte[] buffer) {
-        bs.setBuffer(buffer, 0);
-        decodeChainData();
-        decodeSkinData();
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        ClientChainData that = (ClientChainData) obj;
+        return Objects.equals(this.skinData, that.skinData) && Objects.equals(this.chainData, that.chainData);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(skinData, chainData);
     }
 
     @Override
@@ -192,21 +209,9 @@ public final class ClientChainData implements LoginChainData {
         return xboxAuthed;
     }
 
-    private void decodeSkinData() {
-        JsonObject skinToken = decodeToken(new String(bs.get(bs.getLInt())));
-        if (skinToken == null) return;
-        if (skinToken.has("ClientRandomId")) this.clientId = skinToken.get("ClientRandomId").getAsLong();
-        if (skinToken.has("ServerAddress")) this.serverAddress = skinToken.get("ServerAddress").getAsString();
-        if (skinToken.has("DeviceModel")) this.deviceModel = skinToken.get("DeviceModel").getAsString();
-        if (skinToken.has("DeviceOS")) this.deviceOS = skinToken.get("DeviceOS").getAsInt();
-        if (skinToken.has("DeviceId")) this.deviceId = skinToken.get("DeviceId").getAsString();
-        if (skinToken.has("GameVersion")) this.gameVersion = skinToken.get("GameVersion").getAsString();
-        if (skinToken.has("GuiScale")) this.guiScale = skinToken.get("GuiScale").getAsInt();
-        if (skinToken.has("LanguageCode")) this.languageCode = skinToken.get("LanguageCode").getAsString();
-        if (skinToken.has("CurrentInputMode")) this.currentInputMode = skinToken.get("CurrentInputMode").getAsInt();
-        if (skinToken.has("DefaultInputMode")) this.defaultInputMode = skinToken.get("DefaultInputMode").getAsInt();
-        if (skinToken.has("UIProfile")) this.UIProfile = skinToken.get("UIProfile").getAsInt();
-        if (skinToken.has("CapeData")) this.capeData = skinToken.get("CapeData").getAsString();
+    private static boolean verify(PublicKey key, JWSObject object) throws JOSEException {
+        JWSVerifier verifier = new DefaultJWSVerifierFactory().createJWSVerifier(object.getHeader(), key);
+        return object.verify(verifier);
     }
 
     private JsonObject decodeToken(String token) {
@@ -217,10 +222,9 @@ public final class ClientChainData implements LoginChainData {
         return new Gson().fromJson(json, JsonObject.class);
     }
 
-    private void decodeChainData() {
-        Map<String, List<String>> map = new Gson().fromJson(new String(bs.get(bs.getLInt()), StandardCharsets.UTF_8),
-                new TypeToken<Map<String, List<String>>>() {
-                }.getType());
+    private void decodeChainData(String chainData) {
+        Map<String, List<String>> map = new Gson().fromJson(chainData, new TypeToken<Map<String, List<String>>>() {
+        }.getType());
         if (map.isEmpty() || !map.containsKey("chain") || map.get("chain").isEmpty()) return;
         List<String> chains = map.get("chain");
 
@@ -277,8 +281,85 @@ public final class ClientChainData implements LoginChainData {
         return mojangKeyVerified;
     }
 
-    private boolean verify(PublicKey key, JWSObject object) throws JOSEException {
-        JWSVerifier verifier = new DefaultJWSVerifierFactory().createJWSVerifier(object.getHeader(), key);
-        return object.verify(verifier);
+    private static Skin getSkin(JsonObject skinToken) {
+        Skin skin = new Skin();
+        if (skinToken.has("SkinId")) {
+            skin.setSkinId(skinToken.get("SkinId").getAsString());
+        }
+        if (skinToken.has("CapeId")) {
+            skin.setCapeId(skinToken.get("CapeId").getAsString());
+        }
+
+        skin.setSkinData(getImage(skinToken, "Skin"));
+        skin.setCapeData(getImage(skinToken, "Cape"));
+        if (skinToken.has("PremiumSkin")) {
+            skin.setPremium(skinToken.get("PremiumSkin").getAsBoolean());
+        }
+        if (skinToken.has("PersonaSkin")) {
+            skin.setPersona(skinToken.get("PersonaSkin").getAsBoolean());
+        }
+        if (skinToken.has("CapeOnClassicSkin")) {
+            skin.setCapeOnClassic(skinToken.get("CapeOnClassicSkin").getAsBoolean());
+        }
+
+        if (skinToken.has("SkinResourcePatch")) {
+            skin.setSkinResourcePatch(new String(Base64.getDecoder().decode(skinToken.get("SkinResourcePatch").getAsString()), StandardCharsets.UTF_8));
+        }
+
+        if (skinToken.has("SkinGeometryData")) {
+            skin.setGeometryData(new String(Base64.getDecoder().decode(skinToken.get("SkinGeometryData").getAsString()), StandardCharsets.UTF_8));
+        }
+
+        if (skinToken.has("SkinAnimationData")) {
+            skin.setAnimationData(new String(Base64.getDecoder().decode(skinToken.get("SkinAnimationData").getAsString()), StandardCharsets.UTF_8));
+        }
+
+        if (skinToken.has("AnimatedImageData")) {
+            JsonArray array = skinToken.get("AnimatedImageData").getAsJsonArray();
+            for (JsonElement element : array) {
+                skin.getAnimations().add(getAnimation(element.getAsJsonObject()));
+            }
+        }
+        return skin;
+    }
+
+    private static SkinAnimation getAnimation(JsonObject element) {
+        float frames = element.get("Frames").getAsFloat();
+        int type = element.get("Type").getAsInt();
+        byte[] data = Base64.getDecoder().decode(element.get("Image").getAsString());
+        int width = element.get("ImageWidth").getAsInt();
+        int height = element.get("ImageHeight").getAsInt();
+        return new SkinAnimation(new SerializedImage(width, height, data), type, frames);
+    }
+
+    private static SerializedImage getImage(JsonObject token, String name) {
+        if (token.has(name + "Data")) {
+            byte[] skinImage = Base64.getDecoder().decode(token.get(name + "Data").getAsString());
+            if (token.has(name + "ImageHeight") && token.has(name + "ImageWidth")) {
+                int width = token.get(name + "ImageWidth").getAsInt();
+                int height = token.get(name + "ImageHeight").getAsInt();
+                return new SerializedImage(width, height, skinImage);
+            } else {
+                return SerializedImage.fromLegacy(skinImage);
+            }
+        }
+        return SerializedImage.EMPTY;
+    }
+
+    private void decodeSkinData(String skinData) {
+        JsonObject skinToken = decodeToken(skinData);
+        if (skinToken == null) return;
+        if (skinToken.has("ClientRandomId")) this.clientId = skinToken.get("ClientRandomId").getAsLong();
+        if (skinToken.has("ServerAddress")) this.serverAddress = skinToken.get("ServerAddress").getAsString();
+        if (skinToken.has("DeviceModel")) this.deviceModel = skinToken.get("DeviceModel").getAsString();
+        if (skinToken.has("DeviceOS")) this.deviceOS = skinToken.get("DeviceOS").getAsInt();
+        if (skinToken.has("DeviceId")) this.deviceId = skinToken.get("DeviceId").getAsString();
+        if (skinToken.has("GameVersion")) this.gameVersion = skinToken.get("GameVersion").getAsString();
+        if (skinToken.has("GuiScale")) this.guiScale = skinToken.get("GuiScale").getAsInt();
+        if (skinToken.has("LanguageCode")) this.languageCode = skinToken.get("LanguageCode").getAsString();
+        if (skinToken.has("CurrentInputMode")) this.currentInputMode = skinToken.get("CurrentInputMode").getAsInt();
+        if (skinToken.has("DefaultInputMode")) this.defaultInputMode = skinToken.get("DefaultInputMode").getAsInt();
+        if (skinToken.has("UIProfile")) this.UIProfile = skinToken.get("UIProfile").getAsInt();
+        this.skin = getSkin(skinToken);
     }
 }

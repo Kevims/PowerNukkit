@@ -5,23 +5,15 @@ import cn.nukkit.event.block.BlockFormEvent;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.level.Level;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 /**
  * Created by Pub4Game on 27.12.2015.
  */
 public class BlockSoulSand extends BlockSolid {
 
-    public BlockSoulSand() {
-    }
-
-    @Override
-    public String getName() {
-        return "Soul Sand";
-    }
-
-    @Override
-    public int getId() {
-        return SOUL_SAND;
+    public BlockSoulSand(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -51,8 +43,7 @@ public class BlockSoulSand extends BlockSolid {
 
     @Override
     public void onEntityCollide(Entity entity) {
-        entity.motionX *= 0.4d;
-        entity.motionZ *= 0.4d;
+        entity.setMotion(entity.getMotion().multiply(0.4, 1, 0.4));
     }
 
     @Override

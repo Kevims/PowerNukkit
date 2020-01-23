@@ -1,21 +1,25 @@
 package cn.nukkit.item;
 
-import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.entity.Entity;
-import cn.nukkit.entity.projectile.EntityArrow;
-import cn.nukkit.entity.projectile.EntityProjectile;
+import cn.nukkit.entity.EntityTypes;
+import cn.nukkit.entity.impl.projectile.EntityArrow;
+import cn.nukkit.entity.projectile.Arrow;
 import cn.nukkit.event.entity.EntityShootBowEvent;
 import cn.nukkit.event.entity.ProjectileLaunchEvent;
 import cn.nukkit.item.enchantment.Enchantment;
-import cn.nukkit.math.Vector3;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.DoubleTag;
 import cn.nukkit.nbt.tag.FloatTag;
 import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.network.protocol.LevelSoundEventPacket;
+import cn.nukkit.player.Player;
+import cn.nukkit.utils.Identifier;
 
 import java.util.Random;
+
+import static cn.nukkit.item.ItemIds.ARROW;
 
 /**
  * author: MagicDroidX
@@ -23,16 +27,8 @@ import java.util.Random;
  */
 public class ItemBow extends ItemTool {
 
-    public ItemBow() {
-        this(0, 1);
-    }
-
-    public ItemBow(Integer meta) {
-        this(meta, 1);
-    }
-
-    public ItemBow(Integer meta, int count) {
-        super(BOW, meta, count, "Bow");
+    public ItemBow(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -46,13 +42,13 @@ public class ItemBow extends ItemTool {
     }
 
     @Override
-    public boolean onClickAir(Player player, Vector3 directionVector) {
-        return player.getInventory().contains(Item.get(ItemID.ARROW)) || player.isCreative();
+    public boolean onClickAir(Player player, Vector3f directionVector) {
+        return player.getInventory().contains(Item.get(ARROW)) || player.isCreative();
     }
 
     @Override
     public boolean onRelease(Player player, int ticksUsed) {
-        Item itemArrow = Item.get(Item.ARROW, 0, 1);
+        Item itemArrow = Item.get(ARROW, 0, 1);
 
         if (player.isSurvival() && !player.getInventory().contains(itemArrow)) {
             player.getInventory().sendContents(player);
@@ -86,14 +82,8 @@ public class ItemBow extends ItemTool {
 
         double p = (double) ticksUsed / 20;
         double f = Math.min((p * p + p * 2) / 3, 1) * 2;
-
-        EntityArrow arrow = (EntityArrow) Entity.createEntity("Arrow", player.chunk, nbt, player, f == 2);
-
-        if (arrow == null) {
-            return false;
-        }
-
-        EntityShootBowEvent entityShootBowEvent = new EntityShootBowEvent(player, this, arrow, f);
+        EntityShootBowEvent entityShootBowEvent = new EntityShootBowEvent(player, this,
+                new EntityArrow(EntityTypes.ARROW, player.chunk, nbt, player, f == 2), f);
 
         if (f < 0.1 || ticksUsed < 3) {
             entityShootBowEvent.setCancelled();
@@ -107,8 +97,8 @@ public class ItemBow extends ItemTool {
             entityShootBowEvent.getProjectile().setMotion(entityShootBowEvent.getProjectile().getMotion().multiply(entityShootBowEvent.getForce()));
             Enchantment infinityEnchant = this.getEnchantment(Enchantment.ID_BOW_INFINITY);
             boolean infinity = infinityEnchant != null && infinityEnchant.getLevel() > 0;
-            EntityProjectile projectile;
-            if (infinity && (projectile = entityShootBowEvent.getProjectile()) instanceof EntityArrow) {
+            Entity projectile;
+            if (infinity && (projectile = entityShootBowEvent.getProjectile()) instanceof Arrow) {
                 ((EntityArrow) projectile).setPickupMode(EntityArrow.PICKUP_CREATIVE);
             }
             if (player.isSurvival()) {
@@ -120,7 +110,7 @@ public class ItemBow extends ItemTool {
                     if (!(durability != null && durability.getLevel() > 0 && (100 / (durability.getLevel() + 1)) <= new Random().nextInt(100))) {
                         this.setDamage(this.getDamage() + 1);
                         if (this.getDamage() >= getMaxDurability()) {
-                            this.count--;
+                            this.decrementCount();
                         }
                         player.getInventory().setItemInHand(this);
                     }

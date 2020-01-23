@@ -1,35 +1,30 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.blockentity.BlockEntity;
 import cn.nukkit.blockentity.BlockEntitySign;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemSign;
+import cn.nukkit.item.ItemIds;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.level.Level;
 import cn.nukkit.math.AxisAlignedBB;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.Tag;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
 import cn.nukkit.utils.Faceable;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.*;
 
 /**
  * @author Nukkit Project Team
  */
-public class BlockSignPost extends BlockTransparentMeta implements Faceable {
+public class BlockSignPost extends BlockTransparent implements Faceable {
 
-    public BlockSignPost() {
-        this(0);
-    }
-
-    public BlockSignPost(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public int getId() {
-        return SIGN_POST;
+    public BlockSignPost(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -45,11 +40,6 @@ public class BlockSignPost extends BlockTransparentMeta implements Faceable {
     @Override
     public boolean isSolid() {
         return false;
-    }
-
-    @Override
-    public String getName() {
-        return "Sign Post";
     }
 
     @Override
@@ -71,7 +61,7 @@ public class BlockSignPost extends BlockTransparentMeta implements Faceable {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         if (face != BlockFace.DOWN) {
             CompoundTag nbt = new CompoundTag()
                     .putString("id", BlockEntity.SIGN)
@@ -92,7 +82,7 @@ public class BlockSignPost extends BlockTransparentMeta implements Faceable {
             }
 
             if (player != null) {
-                nbt.putString("Creator", player.getUniqueId().toString());
+                nbt.putString("Creator", player.getServerId().toString());
             }
 
             if (item.hasCustomBlockData()) {
@@ -101,7 +91,7 @@ public class BlockSignPost extends BlockTransparentMeta implements Faceable {
                 }
             }
 
-            BlockEntitySign sign = (BlockEntitySign) BlockEntity.createBlockEntity(BlockEntity.SIGN, getLevel().getChunk((int) block.x >> 4, (int) block.z >> 4), nbt);
+            BlockEntitySign sign = (BlockEntitySign) BlockEntity.createBlockEntity(BlockEntity.SIGN, getLevel().getChunk(block.getChunkX(), block.getChunkZ()), nbt);
             return sign != null;
         }
 
@@ -111,7 +101,7 @@ public class BlockSignPost extends BlockTransparentMeta implements Faceable {
     @Override
     public int onUpdate(int type) {
         if (type == Level.BLOCK_UPDATE_NORMAL) {
-            if (down().getId() == Block.AIR) {
+            if (down().getId() == AIR) {
                 getLevel().useBreakOn(this);
 
                 return Level.BLOCK_UPDATE_NORMAL;
@@ -123,7 +113,7 @@ public class BlockSignPost extends BlockTransparentMeta implements Faceable {
 
     @Override
     public Item toItem() {
-        return new ItemSign();
+        return Item.get(ItemIds.SIGN);
     }
 
     @Override

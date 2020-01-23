@@ -1,15 +1,26 @@
 package cn.nukkit.blockentity;
 
+import cn.nukkit.block.BlockIds;
 import cn.nukkit.Player;
 import cn.nukkit.block.Block;
 import cn.nukkit.inventory.BaseInventory;
 import cn.nukkit.inventory.ChestInventory;
 import cn.nukkit.inventory.DoubleChestInventory;
+import cn.nukkit.inventory.InventoryHolder;
+import cn.nukkit.item.Item;
+import cn.nukkit.level.chunk.Chunk;
+import cn.nukkit.math.Vector3i;
+import cn.nukkit.nbt.NBTIO;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
+import cn.nukkit.nbt.tag.ListTag;
+import cn.nukkit.player.Player;
+import cn.nukkit.utils.Identifier;
 
 import java.util.HashSet;
+
+import static cn.nukkit.block.BlockIds.AIR;
 
 /**
  * author: MagicDroidX
@@ -19,7 +30,7 @@ public class BlockEntityChest extends BlockEntitySpawnableContainer implements B
 
     protected DoubleChestInventory doubleInventory = null;
 
-    public BlockEntityChest(FullChunk chunk, CompoundTag nbt) {
+    public BlockEntityChest(Chunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
     }
 
@@ -47,8 +58,8 @@ public class BlockEntityChest extends BlockEntitySpawnableContainer implements B
 
     @Override
     public boolean isBlockEntityValid() {
-        int blockID = this.getBlock().getId();
-        return blockID == Block.CHEST || blockID == Block.TRAPPED_CHEST;
+        Identifier blockId = this.getBlock().getId();
+        return blockId == BlockIds.CHEST || blockId == BlockIds.TRAPPED_CHEST;
     }
 
     @Override
@@ -102,7 +113,7 @@ public class BlockEntityChest extends BlockEntitySpawnableContainer implements B
 
     public BlockEntityChest getPair() {
         if (this.isPaired()) {
-            BlockEntity blockEntity = this.getLevel().getBlockEntityIfLoaded(new Vector3(this.namedTag.getInt("pairx"), this.y, this.namedTag.getInt("pairz")));
+            BlockEntity blockEntity = this.getLevel().getLoadedBlockEntity(new Vector3i(this.namedTag.getInt("pairx"), this.y, this.namedTag.getInt("pairz")));
             if (blockEntity instanceof BlockEntityChest) {
                 return (BlockEntityChest) blockEntity;
             }

@@ -1,39 +1,29 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.blockentity.BlockEntity;
 import cn.nukkit.blockentity.BlockEntityItemFrame;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemItemFrame;
+import cn.nukkit.item.ItemIds;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.Sound;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.Tag;
+import cn.nukkit.player.Player;
+import cn.nukkit.utils.Identifier;
 
 import java.util.Random;
+
+import static cn.nukkit.block.BlockIds.AIR;
 
 /**
  * Created by Pub4Game on 03.07.2016.
  */
-public class BlockItemFrame extends BlockTransparentMeta {
+public class BlockItemFrame extends BlockTransparent {
 
-    public BlockItemFrame() {
-        this(0);
-    }
-
-    public BlockItemFrame(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public int getId() {
-        return ITEM_FRAME_BLOCK;
-    }
-
-    @Override
-    public String getName() {
-        return "Item Frame";
+    public BlockItemFrame(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -71,24 +61,24 @@ public class BlockItemFrame extends BlockTransparentMeta {
         if (itemFrame == null) {
             return false;
         }
-        if (itemFrame.getItem().getId() == Item.AIR) {
-        	Item itemOnFrame = item.clone();
-        	if (player != null && player.isSurvival()) {
-        		itemOnFrame.setCount(itemOnFrame.getCount() - 1);
+        if (itemFrame.getItem() == null || itemFrame.getItem().getId() == AIR) {
+            Item itemOnFrame = item.clone();
+            if (player != null && player.isSurvival()) {
+                itemOnFrame.setCount(itemOnFrame.getCount() - 1);
                 player.getInventory().setItemInHand(itemOnFrame);
-        	}
+            }
             itemOnFrame.setCount(1);
             itemFrame.setItem(itemOnFrame);
-            this.getLevel().addSound(this, Sound.BLOCK_ITEMFRAME_ADD_ITEM);
+            this.getLevel().addSound(this.asVector3f(), Sound.BLOCK_ITEMFRAME_ADD_ITEM);
         } else {
             itemFrame.setItemRotation((itemFrame.getItemRotation() + 1) % 8);
-            this.getLevel().addSound(this, Sound.BLOCK_ITEMFRAME_ROTATE_ITEM);
+            this.getLevel().addSound(this.asVector3f(), Sound.BLOCK_ITEMFRAME_ROTATE_ITEM);
         }
         return true;
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         if (!target.isTransparent() && face.getIndex() > 1 && !block.isSolid()) {
             switch (face) {
                 case NORTH:
@@ -109,9 +99,9 @@ public class BlockItemFrame extends BlockTransparentMeta {
             this.getLevel().setBlock(block, this, true, true);
             CompoundTag nbt = new CompoundTag()
                     .putString("id", BlockEntity.ITEM_FRAME)
-                    .putInt("x", (int) block.x)
-                    .putInt("y", (int) block.y)
-                    .putInt("z", (int) block.z)
+                    .putInt("x", block.x)
+                    .putInt("y", block.y)
+                    .putInt("z", block.z)
                     .putByte("ItemRotation", 0)
                     .putFloat("ItemDropChance", 1.0f);
             if (item.hasCustomBlockData()) {
@@ -119,11 +109,11 @@ public class BlockItemFrame extends BlockTransparentMeta {
                     nbt.put(aTag.getName(), aTag);
                 }
             }
-            BlockEntityItemFrame frame = (BlockEntityItemFrame) BlockEntity.createBlockEntity(BlockEntity.ITEM_FRAME, this.getLevel().getChunk((int) this.x >> 4, (int) this.z >> 4), nbt);
+            BlockEntityItemFrame frame = (BlockEntityItemFrame) BlockEntity.createBlockEntity(BlockEntity.ITEM_FRAME, this.getLevel().getChunk(this.getChunkX(), this.getChunkZ()), nbt);
             if (frame == null) {
                 return false;
             }
-            this.getLevel().addSound(this, Sound.BLOCK_ITEMFRAME_PLACE);
+            this.getLevel().addSound(this.asVector3f(), Sound.BLOCK_ITEMFRAME_PLACE);
             return true;
         }
         return false;
@@ -131,8 +121,8 @@ public class BlockItemFrame extends BlockTransparentMeta {
 
     @Override
     public boolean onBreak(Item item) {
-        this.getLevel().setBlock(this, layer, new BlockAir(), true, true);
-        this.getLevel().addSound(this, Sound.BLOCK_ITEMFRAME_REMOVE_ITEM);
+        this.getLevel().setBlock(this, Block.get(AIR), true, true);
+        this.getLevel().addSound(this.asVector3f(), Sound.BLOCK_ITEMFRAME_REMOVE_ITEM);
         return true;
     }
 
@@ -154,7 +144,7 @@ public class BlockItemFrame extends BlockTransparentMeta {
 
     @Override
     public Item toItem() {
-        return new ItemItemFrame();
+        return Item.get(ItemIds.FRAME);
     }
 
     @Override

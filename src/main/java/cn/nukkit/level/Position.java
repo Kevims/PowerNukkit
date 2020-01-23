@@ -1,16 +1,16 @@
 package cn.nukkit.level;
 
 import cn.nukkit.block.Block;
-import cn.nukkit.level.format.FullChunk;
+import cn.nukkit.level.chunk.Chunk;
 import cn.nukkit.math.BlockFace;
-import cn.nukkit.math.Vector3;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.utils.LevelException;
 
 /**
  * author: MagicDroidX
  * Nukkit Project
  */
-public class Position extends Vector3 {
+public class Position extends Vector3f {
     public Level level;
 
     public Position() {
@@ -36,11 +36,11 @@ public class Position extends Vector3 {
         this.level = level;
     }
 
-    public static Position fromObject(Vector3 pos) {
+    public static Position fromObject(Vector3f pos) {
         return fromObject(pos, null);
     }
 
-    public static Position fromObject(Vector3 pos, Level level) {
+    public static Position fromObject(Vector3f pos, Level level) {
         return new Position(pos.x, pos.y, pos.z, level);
     }
 
@@ -90,7 +90,7 @@ public class Position extends Vector3 {
     }
 
     public Block getLevelBlock() {
-        if (this.isValid()) return this.level.getBlock(this);
+        if (this.isValid()) return this.level.getBlock(this.getFloorX(), this.getFloorY(), this.getFloorZ());
         else throw new LevelException("Undefined Level reference");
     }
 
@@ -120,7 +120,7 @@ public class Position extends Vector3 {
     }
 
     @Override
-    public Position add(Vector3 x) {
+    public Position add(Vector3f x) {
         return new Position(this.x + x.getX(), this.y + x.getY(), this.z + x.getZ(), this.level);
     }
 
@@ -145,13 +145,13 @@ public class Position extends Vector3 {
     }
 
     @Override
-    public Position subtract(Vector3 x) {
+    public Position subtract(Vector3f x) {
         return this.add(-x.getX(), -x.getY(), -x.getZ());
     }
 
     @Override
-    public Position multiply(double number) {
-        return new Position(this.x * number, this.y * number, this.z * number, this.level);
+    public Position multiply(double val) {
+        return new Position(this.x * val, this.y * val, this.z * val, this.level);
     }
 
     @Override
@@ -184,7 +184,7 @@ public class Position extends Vector3 {
         return (Position) super.clone();
     }
 
-    public FullChunk getChunk() {
+    public Chunk getChunk() {
         return isValid() ? level.getChunk(getChunkX(), getChunkZ()) : null;
     }
 }

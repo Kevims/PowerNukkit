@@ -1,26 +1,24 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.blockentity.BlockEntity;
 import cn.nukkit.blockentity.BlockEntityBeacon;
 import cn.nukkit.inventory.BeaconInventory;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.nbt.tag.CompoundTag;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 /**
  * author: Angelic47 Nukkit Project
  */
 public class BlockBeacon extends BlockTransparent {
 
-    public BlockBeacon() {
-    }
-
-    @Override
-    public int getId() {
-        return BEACON;
+    public BlockBeacon(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -41,11 +39,6 @@ public class BlockBeacon extends BlockTransparent {
     @Override
     public int getToolType() {
         return ItemTool.TYPE_PICKAXE;
-    }
-
-    @Override
-    public String getName() {
-        return "Beacon";
     }
 
     @Override
@@ -71,7 +64,7 @@ public class BlockBeacon extends BlockTransparent {
                         .putInt("x", (int) this.x)
                         .putInt("y", (int) this.y)
                         .putInt("z", (int) this.z);
-                beacon = (BlockEntityBeacon) BlockEntity.createBlockEntity(BlockEntity.BEACON, this.getLevel().getChunk((int) (this.x) >> 4, (int) (this.z) >> 4), nbt);
+                beacon = (BlockEntityBeacon) BlockEntity.createBlockEntity(BlockEntity.BEACON, this.getLevel().getChunk(this.getChunkX(), this.getChunkZ()), nbt);
                 if (beacon == null) {
                     return false;
                 }
@@ -83,8 +76,8 @@ public class BlockBeacon extends BlockTransparent {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
-        boolean blockSuccess = super.place(item, block, target, face, fx, fy, fz, player);
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
+        boolean blockSuccess = super.place(item, block, target, face, clickPos, player);
 
         if (blockSuccess) {
             CompoundTag nbt = new CompoundTag("")
@@ -92,7 +85,7 @@ public class BlockBeacon extends BlockTransparent {
                     .putInt("x", (int) this.x)
                     .putInt("y", (int) this.y)
                     .putInt("z", (int) this.z);
-            BlockEntityBeacon beacon = (BlockEntityBeacon) BlockEntity.createBlockEntity(BlockEntity.BEACON, this.getLevel().getChunk((int) (this.x) >> 4, (int) (this.z) >> 4), nbt);
+            BlockEntityBeacon beacon = new BlockEntityBeacon(this.level.getChunk(this.getChunkX(), this.getChunkZ()), nbt);
             if (beacon == null) {
                 return false;
             }

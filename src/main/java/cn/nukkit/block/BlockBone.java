@@ -2,16 +2,16 @@ package cn.nukkit.block;
 
 import cn.nukkit.Player;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemBlock;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.math.BlockFace;
 import cn.nukkit.utils.BlockColor;
 import cn.nukkit.utils.Faceable;
+import cn.nukkit.utils.Identifier;
 
 /**
  * @author CreeperFace
  */
-public class BlockBone extends BlockSolidMeta implements Faceable {
+public class BlockBone extends BlockSolid implements Faceable {
 
     private static final int[] FACES = {
             0,
@@ -22,22 +22,8 @@ public class BlockBone extends BlockSolidMeta implements Faceable {
             0b0100
     };
 
-    public BlockBone() {
-        this(0);
-    }
-
-    public BlockBone(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public int getId() {
-        return BONE_BLOCK;
-    }
-
-    @Override
-    public String getName() {
-        return "Bone Block";
+    public BlockBone(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -58,7 +44,7 @@ public class BlockBone extends BlockSolidMeta implements Faceable {
     @Override
     public Item[] getDrops(Item item) {
         if (item.isPickaxe() && item.getTier() >= ItemTool.TIER_WOODEN) {
-            return new Item[]{new ItemBlock(this)};
+            return new Item[]{Item.get(id)};
         }
 
         return new Item[0];

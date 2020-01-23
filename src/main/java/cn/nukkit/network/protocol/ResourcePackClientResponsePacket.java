@@ -1,5 +1,7 @@
 package cn.nukkit.network.protocol;
 
+import cn.nukkit.utils.Binary;
+import io.netty.buffer.ByteBuf;
 import lombok.ToString;
 
 import java.util.UUID;
@@ -7,39 +9,40 @@ import java.util.UUID;
 @ToString
 public class ResourcePackClientResponsePacket extends DataPacket {
 
-    public static final byte NETWORK_ID = ProtocolInfo.RESOURCE_PACK_CLIENT_RESPONSE_PACKET;
+    public static final short NETWORK_ID = ProtocolInfo.RESOURCE_PACK_CLIENT_RESPONSE_PACKET;
 
-    public static final byte STATUS_REFUSED = 1;
-    public static final byte STATUS_SEND_PACKS = 2;
-    public static final byte STATUS_HAVE_ALL_PACKS = 3;
-    public static final byte STATUS_COMPLETED = 4;
-
-    public byte responseStatus;
-    public Entry[] packEntries;
+    public Status status;
+    public String[] packEntries;
 
     @Override
-    public void decode() {
-        this.responseStatus = (byte) this.getByte();
-        this.packEntries = new Entry[this.getLShort()];
+    protected void decode(ByteBuf buffer) {
+        this.status = Status.values()[buffer.readUnsignedByte()];
+        this.packEntries = new String[buffer.readShortLE()];
         for (int i = 0; i < this.packEntries.length; i++) {
-            String[] entry = this.getString().split("_");
-            this.packEntries[i] = new Entry(UUID.fromString(entry[0]), entry[1]);
+            this.packEntries[i] = Binary.readString(buffer);
         }
     }
 
     @Override
-    public void encode() {
-        this.reset();
-        this.putByte(this.responseStatus);
-        this.putLShort(this.packEntries.length);
-        for (Entry entry : this.packEntries) {
-            this.putString(entry.uuid.toString() + '_' + entry.version);
+    protected void encode(ByteBuf buffer) {
+        buffer.writeByte(this.status.ordinal());
+        buffer.writeShortLE(this.packEntries.length);
+        for (String entry : this.packEntries) {
+            Binary.writeString(buffer, entry);
         }
     }
 
     @Override
-    public byte pid() {
+    public short pid() {
         return NETWORK_ID;
+    }
+
+    public enum Status {
+        UNKNOWN,
+        REFUSED,
+        SEND_PACKS,
+        HAVE_ALL_PACKS,
+        COMPLETED
     }
 
     @ToString

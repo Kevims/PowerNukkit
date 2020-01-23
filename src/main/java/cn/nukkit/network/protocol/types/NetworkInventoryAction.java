@@ -1,6 +1,5 @@
 package cn.nukkit.network.protocol.types;
 
-import cn.nukkit.Player;
 import cn.nukkit.inventory.AnvilInventory;
 import cn.nukkit.inventory.BeaconInventory;
 import cn.nukkit.inventory.EnchantInventory;
@@ -8,15 +7,20 @@ import cn.nukkit.inventory.GrindstoneInventory;
 import cn.nukkit.inventory.Inventory;
 import cn.nukkit.inventory.transaction.action.*;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemID;
+import cn.nukkit.item.ItemIds;
 import cn.nukkit.network.protocol.InventoryTransactionPacket;
+import cn.nukkit.player.Player;
+import cn.nukkit.utils.Binary;
+import io.netty.buffer.ByteBuf;
 import lombok.ToString;
+import lombok.extern.log4j.Log4j2;
 
 import java.util.Optional;
 
 /**
  * @author CreeperFace
  */
+@Log4j2
 @ToString
 public class NetworkInventoryAction {
 
@@ -70,21 +74,21 @@ public class NetworkInventoryAction {
     public Item oldItem;
     public Item newItem;
 
-    public NetworkInventoryAction read(InventoryTransactionPacket packet) {
-        this.sourceType = (int) packet.getUnsignedVarInt();
+    public NetworkInventoryAction read(ByteBuf buffer, InventoryTransactionPacket packet) {
+        this.sourceType = (int) Binary.readUnsignedVarInt(buffer);
 
         switch (this.sourceType) {
             case SOURCE_CONTAINER:
-                this.windowId = packet.getVarInt();
+                this.windowId = Binary.readVarInt(buffer);
                 break;
             case SOURCE_WORLD:
-                this.unknown = packet.getUnsignedVarInt();
+                this.unknown = Binary.readUnsignedVarInt(buffer);
                 break;
             case SOURCE_CREATIVE:
                 break;
             case SOURCE_CRAFT_SLOT:
             case SOURCE_TODO:
-                this.windowId = packet.getVarInt();
+                this.windowId = Binary.readVarInt(buffer);
 
                 switch (this.windowId) {
                     case SOURCE_TYPE_CRAFTING_RESULT:
@@ -99,34 +103,34 @@ public class NetworkInventoryAction {
                 break;
         }
 
-        this.inventorySlot = (int) packet.getUnsignedVarInt();
-        this.oldItem = packet.getSlot();
-        this.newItem = packet.getSlot();
+        this.inventorySlot = (int) Binary.readUnsignedVarInt(buffer);
+        this.oldItem = Binary.readItem(buffer);
+        this.newItem = Binary.readItem(buffer);
 
         return this;
     }
 
-    public void write(InventoryTransactionPacket packet) {
-        packet.putUnsignedVarInt(this.sourceType);
+    public void write(ByteBuf buffer, InventoryTransactionPacket packet) {
+        Binary.writeUnsignedVarInt(buffer, this.sourceType);
 
         switch (this.sourceType) {
             case SOURCE_CONTAINER:
-                packet.putVarInt(this.windowId);
+                Binary.writeVarInt(buffer, this.windowId);
                 break;
             case SOURCE_WORLD:
-                packet.putUnsignedVarInt(this.unknown);
+                Binary.writeUnsignedVarInt(buffer, this.unknown);
                 break;
             case SOURCE_CREATIVE:
                 break;
             case SOURCE_CRAFT_SLOT:
             case SOURCE_TODO:
-                packet.putVarInt(this.windowId);
+                Binary.writeVarInt(buffer, this.windowId);
                 break;
         }
 
-        packet.putUnsignedVarInt(this.inventorySlot);
-        packet.putSlot(this.oldItem);
-        packet.putSlot(this.newItem);
+        Binary.writeUnsignedVarInt(buffer, this.inventorySlot);
+        Binary.writeItem(buffer, this.oldItem);
+        Binary.writeItem(buffer, this.newItem);
     }
 
     public InventoryAction createInventoryAction(Player player) {
@@ -143,11 +147,11 @@ public class NetworkInventoryAction {
                     return new SlotChangeAction(window, this.inventorySlot, this.oldItem, this.newItem);
                 }
 
-                player.getServer().getLogger().debug("Player " + player.getName() + " has no open container with window ID " + this.windowId);
+                log.debug("Player " + player.getName() + " has no open container with window ID " + this.windowId);
                 return null;
             case SOURCE_WORLD:
                 if (this.inventorySlot != InventoryTransactionPacket.ACTION_MAGIC_SLOT_DROP_ITEM) {
-                    player.getServer().getLogger().debug("Only expecting drop-item world actions from the client!");
+                    log.debug("Only expecting drop-item world actions from the client!");
                     return null;
                 }
 
@@ -163,7 +167,7 @@ public class NetworkInventoryAction {
                         type = CreativeInventoryAction.TYPE_CREATE_ITEM;
                         break;
                     default:
-                        player.getServer().getLogger().debug("Unexpected creative action type " + this.inventorySlot);
+                        log.debug("Unexpected creative action type " + this.inventorySlot);
                         return null;
                 }
 
@@ -191,9 +195,11 @@ public class NetworkInventoryAction {
                 if (this.windowId >= SOURCE_TYPE_ANVIL_OUTPUT && this.windowId <= SOURCE_TYPE_ANVIL_INPUT) { //anvil actions
                     Inventory inv = player.getWindowById(Player.ANVIL_WINDOW_ID);
 
-                    //TODO Anvil and Grindstones are completely hackable! Needs to be fixed!
-                    if (inv instanceof AnvilInventory) {
-                        AnvilInventory anvil = (AnvilInventory) inv;
+                    if (!(inv instanceof AnvilInventory)) {
+                        log.debug("Player " + player.getName() + " has no open anvil inventory");
+                        return null;
+                    }
+                    AnvilInventory anvil = (AnvilInventory) inv;
 
                         switch (this.windowId) {
                             case SOURCE_TYPE_ANVIL_INPUT:
@@ -236,7 +242,7 @@ public class NetworkInventoryAction {
                     Inventory inv = player.getWindowById(Player.ENCHANT_WINDOW_ID);
 
                     if (!(inv instanceof EnchantInventory)) {
-                        player.getServer().getLogger().debug("Player " + player.getName() + " has no open enchant inventory");
+                        log.debug("Player " + player.getName() + " has no open enchant inventory");
                         return null;
                     }
                     EnchantInventory enchant = (EnchantInventory) inv;
@@ -260,7 +266,7 @@ public class NetworkInventoryAction {
                                 // Outputs should only be in slot 0.
                                 return null;
                             }
-                            if (Item.get(ItemID.DYE, 4).equals(this.newItem, true, false)) {
+                            if (Item.get(ItemIds.DYE, 4).equals(this.newItem, true, false)) {
                                 this.inventorySlot = 2; // Fake slot to store used material
                                 if (this.newItem.getCount() < 1 || this.newItem.getCount() > 3) {
                                     // Invalid material
@@ -269,7 +275,7 @@ public class NetworkInventoryAction {
                                 Item material = enchant.getItem(1);
                                 // Material to take away.
                                 int toRemove = this.newItem.getCount();
-                                if (material.getId() != ItemID.DYE && material.getDamage() != 4 &&
+                                if (material.getId() != ItemIds.DYE && material.getDamage() != 4 &&
                                         material.getCount() < toRemove) {
                                     // Invalid material or not enough
                                     return null;
@@ -278,7 +284,7 @@ public class NetworkInventoryAction {
                                 Item toEnchant = enchant.getItem(0);
                                 Item material = enchant.getItem(1);
                                 if (toEnchant.equals(this.newItem, true, true) &&
-                                        (material.getId() == ItemID.DYE && material.getDamage() == 4 || player.isCreative())) {
+                                        (material.getId() == ItemIds.DYE && material.getDamage() == 4 || player.isCreative())) {
                                     this.inventorySlot = 3; // Fake slot to store the resultant item.
 
                                     //TODO: Check (old) item has valid enchantments
@@ -296,7 +302,7 @@ public class NetworkInventoryAction {
                     Inventory inv = player.getWindowById(Player.BEACON_WINDOW_ID);
 
                     if (!(inv instanceof BeaconInventory)) {
-                        player.getServer().getLogger().debug("Player " + player.getName() + " has no open beacon inventory");
+                        log.debug("Player " + player.getName() + " has no open beacon inventory");
                         return null;
                     }
                     BeaconInventory beacon = (BeaconInventory) inv;
@@ -306,10 +312,10 @@ public class NetworkInventoryAction {
                 }
 
                 //TODO: more stuff
-                player.getServer().getLogger().debug("Player " + player.getName() + " has no open container with window ID " + this.windowId);
+                log.debug("Player " + player.getName() + " has no open container with window ID " + this.windowId);
                 return null;
             default:
-                player.getServer().getLogger().debug("Unknown inventory source type " + this.sourceType);
+                log.debug("Unknown inventory source type " + this.sourceType);
                 return null;
         }
     }

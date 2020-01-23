@@ -1,8 +1,9 @@
 package cn.nukkit.level;
 
 import cn.nukkit.Server;
-import cn.nukkit.level.generator.Generator;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public enum EnumLevel {
     OVERWORLD,
     NETHER,
@@ -19,22 +20,22 @@ public enum EnumLevel {
         OVERWORLD.level = Server.getInstance().getDefaultLevel();
 
         // attempt to load the nether world if it is allowed in server properties
-        if (Server.getInstance().isNetherAllowed() && !Server.getInstance().loadLevel("nether")) {
+        if (Server.getInstance().isNetherAllowed()) {
 
             // Nether is allowed, and not found, create the default nether world
-            Server.getInstance().getLogger().info("No level called \"nether\" found, creating default nether level.");
+            log.info("No level called \"nether\" found, creating default nether level.");
 
             // Generate seed for nether and get nether generator
-            long seed = System.currentTimeMillis();
-            Class<? extends Generator> generator = Generator.getGenerator("nether");
-
-            // Generate the nether world
-            Server.getInstance().generateLevel("nether", seed, generator);
-
-            // Finally, load the level if not already loaded and set the level
-            if (!Server.getInstance().isLevelLoaded("nether")) {
-                Server.getInstance().loadLevel("nether");
-            }
+            Server.getInstance().loadLevel().id("nether").load();
+//            Class<? extends Generator> generator = Generator.getGenerator("nether");
+//
+//            // Generate the nether world
+//            Server.getInstance().generateLevel("nether", seed, generator);
+//
+//            // Finally, load the level if not already loaded and set the level
+//            if (!Server.getInstance().isLevelLoaded("nether")) {
+//                Server.getInstance().loadLevel("nether");
+//            }
 
         }
 
@@ -42,7 +43,7 @@ public enum EnumLevel {
 
         if (NETHER.level == null) {
             // Nether is not found or disabled
-            Server.getInstance().getLogger().alert("No level called \"nether\" found or nether is disabled in server properties! Nether functionality will be disabled.");
+            log.warn("No level called \"nether\" found or nether is disabled in server properties! Nether functionality will be disabled.");
         }
     }
 

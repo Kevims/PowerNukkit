@@ -1,6 +1,9 @@
 package cn.nukkit.level;
 
-import cn.nukkit.level.format.generic.BaseFullChunk;
+import cn.nukkit.block.Block;
+import cn.nukkit.level.chunk.IChunk;
+import cn.nukkit.registry.BlockRegistry;
+import cn.nukkit.utils.Identifier;
 
 /**
  * author: MagicDroidX
@@ -8,39 +11,52 @@ import cn.nukkit.level.format.generic.BaseFullChunk;
  */
 public interface ChunkManager {
 
-    int getBlockIdAt(int x, int y, int z, int layer);
-    int getBlockIdAt(int x, int y, int z);
-
-    void setBlockFullIdAt(int x, int y, int z, int layer, int fullId);
-
-    void setBlockFullIdAt(int x, int y, int z, int fullId);
-
-    void setBlockIdAt(int x, int y, int z, int layer, int id);
-    void setBlockIdAt(int x, int y, int z, int id);
-
-    boolean setBlockAtLayer(int x, int y, int z, int layer, int id, int data);
-
-    default boolean setBlockAtLayer(int x, int y, int z, int layer, int id) {
-        return setBlockAtLayer(x, y, z, layer, id, 0);
+    default Identifier getBlockIdAt(int x, int y, int z) {
+        return getBlockIdAt(x, y, z, 0);
     }
 
-    default void setBlockAt(int x, int y, int z, int id) {
-        setBlockAt(x, y, z, id, 0);
+    Identifier getBlockIdAt(int x, int y, int z, int layer);
+
+    default void setBlockIdAt(int x, int y, int z, Identifier id) {
+        setBlockIdAt(x, y, z, 0, id);
     }
 
-    void setBlockAt(int x, int y, int z, int id, int data);
+    void setBlockIdAt(int x, int y, int z, int layer, Identifier id);
+
+    default int getBlockDataAt(int x, int y, int z) {
+        return getBlockDataAt(x, y, z, 0);
+    }
 
     int getBlockDataAt(int x, int y, int z, int layer);
-    int getBlockDataAt(int x, int y, int z);
+
+    default void setBlockDataAt(int x, int y, int z, int data) {
+        setBlockDataAt(x, y, z, 0, data);
+    }
 
     void setBlockDataAt(int x, int y, int z, int layer, int data);
-    void setBlockDataAt(int x, int y, int z, int data);
 
-    BaseFullChunk getChunk(int chunkX, int chunkZ);
+    default Block getBlockAt(int x, int y, int z) {
+        return getBlockAt(x, y, z, 0);
+    }
 
-    void setChunk(int chunkX, int chunkZ);
+    Block getBlockAt(int x, int y, int z, int layer);
 
-    void setChunk(int chunkX, int chunkZ, BaseFullChunk chunk);
+    default void setBlockAt(int x, int y, int z, Identifier id, int data) {
+        setBlockAt(x, y, z, 0, id, data);
+    }
+
+    default void setBlockAt(int x, int y, int z, int layer, Identifier id, int data) {
+        setBlockAt(x, y, z, layer, BlockRegistry.get().getBlock(id, data));
+    }
+
+    default void setBlockAt(int x, int y, int z, Block block) {
+        setBlockAt(x, y, z, 0, block);
+    }
+
+    void setBlockAt(int x, int y, int z, int layer, Block block);
+
+
+    IChunk getChunk(int chunkX, int chunkZ);
 
     long getSeed();
 }

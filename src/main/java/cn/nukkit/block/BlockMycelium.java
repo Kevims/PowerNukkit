@@ -3,29 +3,22 @@ package cn.nukkit.block;
 import cn.nukkit.Server;
 import cn.nukkit.event.block.BlockSpreadEvent;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemBlock;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.level.Level;
 import cn.nukkit.math.NukkitRandom;
-import cn.nukkit.math.Vector3;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.DIRT;
+import static cn.nukkit.block.BlockIds.MYCELIUM;
 
 /**
  * Created by Pub4Game on 03.01.2016.
  */
 public class BlockMycelium extends BlockSolid {
 
-    public BlockMycelium() {
-    }
-
-    @Override
-    public String getName() {
-        return "Mycelium";
-    }
-
-    @Override
-    public int getId() {
-        return MYCELIUM;
+    public BlockMycelium(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -46,7 +39,7 @@ public class BlockMycelium extends BlockSolid {
     @Override
     public Item[] getDrops(Item item) {
         return new Item[]{
-                new ItemBlock(new BlockDirt())
+                Item.get(DIRT)
         };
     }
 
@@ -55,13 +48,13 @@ public class BlockMycelium extends BlockSolid {
         if (type == Level.BLOCK_UPDATE_RANDOM) {
             //TODO: light levels
             NukkitRandom random = new NukkitRandom();
-            x = random.nextRange((int) x - 1, (int) x + 1);
-            y = random.nextRange((int) y - 1, (int) y + 1);
-            z = random.nextRange((int) z - 1, (int) z + 1);
-            Block block = this.getLevel().getBlock(new Vector3(x, y, z));
-            if (block.getId() == Block.DIRT && block.getDamage() == 0) {
+            x = random.nextRange(x - 1, x + 1);
+            y = random.nextRange(y - 1, y + 1);
+            z = random.nextRange(z - 1, z + 1);
+            Block block = this.getLevel().getBlock(x, y, z);
+            if (block.getId() == DIRT && block.getDamage() == 0) {
                 if (block.up().isTransparent()) {
-                    BlockSpreadEvent ev = new BlockSpreadEvent(block, this, new BlockMycelium());
+                    BlockSpreadEvent ev = new BlockSpreadEvent(block, this, Block.get(MYCELIUM));
                     Server.getInstance().getPluginManager().callEvent(ev);
                     if (!ev.isCancelled()) {
                         this.getLevel().setBlock(block, ev.getNewState());

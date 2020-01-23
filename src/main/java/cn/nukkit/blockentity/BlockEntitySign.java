@@ -1,11 +1,12 @@
 package cn.nukkit.blockentity;
 
-import cn.nukkit.Player;
-import cn.nukkit.block.Block;
+import cn.nukkit.block.BlockIds;
 import cn.nukkit.block.BlockSignPost;
 import cn.nukkit.event.block.SignChangeEvent;
-import cn.nukkit.level.format.FullChunk;
+import cn.nukkit.level.chunk.Chunk;
 import cn.nukkit.nbt.tag.CompoundTag;
+import cn.nukkit.player.Player;
+import cn.nukkit.utils.Identifier;
 import cn.nukkit.utils.TextFormat;
 
 import java.util.Arrays;
@@ -19,7 +20,7 @@ public class BlockEntitySign extends BlockEntitySpawnable {
 
     private String[] text;
 
-    public BlockEntitySign(FullChunk chunk, CompoundTag nbt) {
+    public BlockEntitySign(Chunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
     }
 
@@ -67,8 +68,13 @@ public class BlockEntitySign extends BlockEntitySpawnable {
 
     @Override
     public boolean isBlockEntityValid() {
-        Block block = getBlock();
-        return block instanceof BlockSignPost;
+        Identifier blockId = getBlock().getId();
+        return blockId == BlockIds.STANDING_SIGN || blockId == BlockIds.WALL_SIGN ||
+                blockId == BlockIds.SPRUCE_STANDING_SIGN || blockId == BlockIds.SPRUCE_WALL_SIGN ||
+                blockId == BlockIds.BIRCH_STANDING_SIGN || blockId == BlockIds.BIRCH_WALL_SIGN ||
+                blockId == BlockIds.JUNGLE_STANDING_SIGN || blockId == BlockIds.JUNGLE_WALL_SIGN ||
+                blockId == BlockIds.ACACIA_STANDING_SIGN || blockId == BlockIds.ACACIA_WALL_SIGN ||
+                blockId == BlockIds.DARK_OAK_STANDING_SIGN || blockId == BlockIds.DARK_OAK_WALL_SIGN;
     }
 
     public boolean setText(String... lines) {
@@ -107,7 +113,7 @@ public class BlockEntitySign extends BlockEntitySpawnable {
 
         SignChangeEvent signChangeEvent = new SignChangeEvent(this.getBlock(), player, lines);
 
-        if (!this.namedTag.contains("Creator") || !Objects.equals(player.getUniqueId().toString(), this.namedTag.getString("Creator"))) {
+        if (!this.namedTag.contains("Creator") || !Objects.equals(player.getServerId().toString(), this.namedTag.getString("Creator"))) {
             signChangeEvent.setCancelled();
         }
 

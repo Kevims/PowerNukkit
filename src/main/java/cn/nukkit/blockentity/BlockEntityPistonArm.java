@@ -1,14 +1,16 @@
 package cn.nukkit.blockentity;
 
 import cn.nukkit.entity.Entity;
-import cn.nukkit.level.format.FullChunk;
+import cn.nukkit.level.chunk.Chunk;
 import cn.nukkit.math.AxisAlignedBB;
 import cn.nukkit.math.BlockFace;
 import cn.nukkit.math.SimpleAxisAlignedBB;
-import cn.nukkit.math.Vector3;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.IntTag;
 import cn.nukkit.nbt.tag.ListTag;
+
+import java.util.Set;
 
 /**
  * @author CreeperFace
@@ -22,11 +24,11 @@ public class BlockEntityPistonArm extends BlockEntitySpawnable {
     public boolean sticky;
     public byte state;
     public byte newState;
-    public Vector3 attachedBlock;
+    public Vector3f attachedBlock;
     public boolean isMovable;
     public boolean powered;
 
-    public BlockEntityPistonArm(FullChunk chunk, CompoundTag nbt) {
+    public BlockEntityPistonArm(Chunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
     }
 
@@ -57,10 +59,10 @@ public class BlockEntityPistonArm extends BlockEntitySpawnable {
         if (namedTag.contains("AttachedBlocks")) {
             ListTag blocks = namedTag.getList("AttachedBlocks", IntTag.class);
             if (blocks != null && blocks.size() > 0) {
-                this.attachedBlock = new Vector3((double) ((IntTag) blocks.get(0)).getData(), (double) ((IntTag) blocks.get(1)).getData(), (double) ((IntTag) blocks.get(2)).getData());
+                this.attachedBlock = new Vector3f((double) ((IntTag) blocks.get(0)).getData(), (double) ((IntTag) blocks.get(1)).getData(), (double) ((IntTag) blocks.get(2)).getData());
             }
         } else {
-            namedTag.putList(new ListTag("AttachedBlocks"));
+            namedTag.putList(new ListTag<>("AttachedBlocks"));
         }
 
         super.initBlockEntity();
@@ -72,8 +74,8 @@ public class BlockEntityPistonArm extends BlockEntitySpawnable {
         double y = (double) (lastProgress * (float) this.facing.getYOffset());
         double z = (double) (lastProgress * (float) this.facing.getZOffset());
         AxisAlignedBB bb = new SimpleAxisAlignedBB(x, y, z, x + 1.0D, y + 1.0D, z + 1.0D);
-        Entity[] entities = this.level.getCollidingEntities(bb);
-        if (entities.length != 0) {
+        Set<Entity> entities = this.level.getCollidingEntities(bb);
+        if (!entities.isEmpty()) {
 
         }
 

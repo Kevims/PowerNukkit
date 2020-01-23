@@ -2,7 +2,11 @@ package cn.nukkit.block;
 
 import cn.nukkit.math.AxisAlignedBB;
 import cn.nukkit.math.SimpleAxisAlignedBB;
+import cn.nukkit.utils.Identifier;
 import cn.nukkit.utils.LevelException;
+
+import static cn.nukkit.block.BlockIds.GLASS;
+import static cn.nukkit.block.BlockIds.GLASS_PANE;
 
 /**
  * Created on 2015/12/6 by xtypr.
@@ -10,7 +14,8 @@ import cn.nukkit.utils.LevelException;
  */
 public abstract class BlockThin extends BlockTransparent {
 
-    protected BlockThin() {
+    public BlockThin(Identifier id) {
+        super(id);
     }
 
     @Override

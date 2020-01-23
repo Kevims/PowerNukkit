@@ -1,17 +1,20 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemBlock;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.QUARTZ_BLOCK;
 
 /**
  * author: MagicDroidX
  * Nukkit Project
  */
-public class BlockQuartz extends BlockSolidMeta {
+public class BlockQuartz extends BlockSolid {
 
     public static final int QUARTZ_NORMAL = 0;
     public static final int QUARTZ_CHISELED = 1;
@@ -19,17 +22,8 @@ public class BlockQuartz extends BlockSolidMeta {
     public static final int QUARTZ_PILLAR2 = 3;
 
 
-    public BlockQuartz() {
-        this(0);
-    }
-
-    public BlockQuartz(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public int getId() {
-        return QUARTZ_BLOCK;
+    public BlockQuartz(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -43,19 +37,7 @@ public class BlockQuartz extends BlockSolidMeta {
     }
 
     @Override
-    public String getName() {
-        String[] names = new String[]{
-                "Quartz Block",
-                "Chiseled Quartz Block",
-                "Quartz Pillar",
-                "Quartz Pillar"
-        };
-
-        return names[this.getDamage() & 0x03];
-    }
-
-    @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         if (this.getDamage() != QUARTZ_NORMAL) {
             short[] faces = new short[]{
                     0,
@@ -86,7 +68,7 @@ public class BlockQuartz extends BlockSolidMeta {
 
     @Override
     public Item toItem() {
-        return new ItemBlock(new BlockQuartz(), this.getDamage() & 0x03, 1);
+        return Item.get(QUARTZ_BLOCK, this.getDamage() & 0x03, 1);
     }
 
     @Override

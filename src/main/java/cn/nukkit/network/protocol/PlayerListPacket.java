@@ -1,6 +1,8 @@
 package cn.nukkit.network.protocol;
 
 import cn.nukkit.entity.data.Skin;
+import cn.nukkit.utils.Binary;
+import io.netty.buffer.ByteBuf;
 import lombok.ToString;
 
 import java.util.UUID;
@@ -11,7 +13,7 @@ import java.util.UUID;
 @ToString
 public class PlayerListPacket extends DataPacket {
 
-    public static final byte NETWORK_ID = ProtocolInfo.PLAYER_LIST_PACKET;
+    public static final short NETWORK_ID = ProtocolInfo.PLAYER_LIST_PACKET;
 
     public static final byte TYPE_ADD = 0;
     public static final byte TYPE_REMOVE = 1;
@@ -20,33 +22,31 @@ public class PlayerListPacket extends DataPacket {
     public Entry[] entries = new Entry[0];
 
     @Override
-    public void decode() {
+    protected void decode(ByteBuf buffer) {
 
     }
 
     @Override
-    public void encode() {
-        this.reset();
-        this.putByte(this.type);
-        this.putUnsignedVarInt(this.entries.length);
+    protected void encode(ByteBuf buffer) {
+        buffer.writeByte(this.type);
+        Binary.writeUnsignedVarInt(buffer, this.entries.length);
         for (Entry entry : this.entries) {
-            this.putUUID(entry.uuid);
+            Binary.writeUuid(buffer, entry.uuid);
             if (type == TYPE_ADD) {
-                this.putVarLong(entry.entityId);
-                this.putString(entry.name);
-                this.putString(entry.xboxUserId);
-                this.putString(entry.platformChatId);
-                this.putLInt(entry.buildPlatform);
-                this.putSkin(entry.skin);
-                this.putBoolean(entry.isTeacher);
-                this.putBoolean(entry.isHost);
+                Binary.writeEntityUniqueId(buffer, entry.entityId);
+                Binary.writeString(buffer, entry.name);
+                Binary.writeString(buffer, entry.xboxUserId);
+                Binary.writeString(buffer, entry.platformChatId);
+                buffer.writeIntLE(entry.buildPlatform);
+                Binary.writeSkin(buffer, entry.skin);
+                buffer.writeBoolean(entry.isTeacher);
+                buffer.writeBoolean(entry.isHost);
             }
         }
-
     }
 
     @Override
-    public byte pid() {
+    public short pid() {
         return NETWORK_ID;
     }
 
@@ -79,5 +79,4 @@ public class PlayerListPacket extends DataPacket {
             this.xboxUserId = xboxUserId == null ? "" : xboxUserId;
         }
     }
-
 }

@@ -1,9 +1,8 @@
 package cn.nukkit.block;
 
-import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemDoorWood;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 /**
  * author: MagicDroidX
@@ -11,22 +10,8 @@ import cn.nukkit.utils.BlockColor;
  */
 public class BlockDoorWood extends BlockDoor {
 
-    public BlockDoorWood() {
-        this(0);
-    }
-
-    public BlockDoorWood(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public String getName() {
-        return "Wood Door Block";
-    }
-
-    @Override
-    public int getId() {
-        return WOOD_DOOR_BLOCK;
+    public BlockDoorWood(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -42,11 +27,6 @@ public class BlockDoorWood extends BlockDoor {
     @Override
     public int getToolType() {
         return ItemTool.TYPE_AXE;
-    }
-
-    @Override
-    public Item toItem() {
-        return new ItemDoorWood();
     }
 
     @Override

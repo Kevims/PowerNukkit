@@ -1,42 +1,33 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.item.Item;
-import cn.nukkit.level.GlobalBlockPalette;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.Sound;
 import cn.nukkit.level.particle.SmokeParticle;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.network.protocol.LevelEventPacket;
+import cn.nukkit.player.Player;
+import cn.nukkit.registry.BlockRegistry;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
+
+import static cn.nukkit.block.BlockIds.*;
 
 /**
  * author: Angelic47
  * Nukkit Project
  */
-public class BlockSponge extends BlockSolidMeta {
+public class BlockSponge extends BlockSolid {
 
     public static final int DRY = 0;
     public static final int WET = 1;
-    private static final String[] NAMES = new String[]{
-            "Sponge",
-            "Wet sponge"
-    };
 
-    public BlockSponge() {
-        this(0);
-    }
-
-    public BlockSponge(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public int getId() {
-        return SPONGE;
+    public BlockSponge(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -50,39 +41,36 @@ public class BlockSponge extends BlockSolidMeta {
     }
 
     @Override
-    public String getName() {
-        return NAMES[this.getDamage() & 0b1];
-    }
-
-    @Override
     public BlockColor getColor() {
         return BlockColor.YELLOW_BLOCK_COLOR;
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         Level level = block.getLevel();
         boolean blockSet = level.setBlock(block, this);
 
         if (blockSet) {
             if (this.getDamage() == WET && level.getDimension() == Level.DIMENSION_NETHER) {
-                level.setBlock(block, Block.get(BlockID.SPONGE, DRY));
-                this.getLevel().addSound(block.getLocation(), Sound.RANDOM_FIZZ);
+                level.setBlock(block, Block.get(SPONGE, DRY));
+                this.getLevel().addSound(block.asVector3f(), Sound.RANDOM_FIZZ);
 
                 for (int i = 0; i < 8; ++i) {
                     this.getLevel().addParticle(
-                        //TODO: Use correct smoke particle
-                        new SmokeParticle(block.getLocation().add(Math.random(), 1, Math.random())));
+                            //TODO: Use correct smoke particle
+                            new SmokeParticle(block.asVector3f().add(Math.random(), 1, Math.random())));
                 }
             } else if (this.getDamage() == DRY && performWaterAbsorb(block)) {
-                level.setBlock(block, Block.get(BlockID.SPONGE, WET));
+                level.setBlock(block, Block.get(SPONGE, WET));
 
                 for (int i = 0; i < 4; i++) {
-                    level.addLevelEvent(
-                            LevelEventPacket.EVENT_PARTICLE_DESTROY, 
-                            GlobalBlockPalette.getOrCreateRuntimeId(BlockID.WATER, 0),
-                            block 
-                    );
+                    LevelEventPacket packet = new LevelEventPacket();
+                    packet.evid = 2001;
+                    packet.x = (float) block.getX();
+                    packet.y = (float) block.getY();
+                    packet.z = (float) block.getZ();
+                    packet.data = BlockRegistry.get().getRuntimeId(FLOWING_WATER, 0);
+                    level.addChunkPacket(getChunkX(), getChunkZ(), packet);
                 }
             }
         }
@@ -100,13 +88,13 @@ public class BlockSponge extends BlockSolidMeta {
             for (BlockFace face : BlockFace.values()) {
 
                 Block faceBlock = entry.block.getSide(face);
-                if (faceBlock.getId() == BlockID.WATER || faceBlock.getId() == BlockID.STILL_WATER) {
-                    this.level.setBlock(faceBlock, Block.get(BlockID.AIR));
+                if (faceBlock.getId() == FLOWING_WATER || faceBlock.getId() == WATER) {
+                    this.level.setBlock(faceBlock, Block.get(AIR, 0));
                     ++waterRemoved;
                     if (entry.distance < 6) {
                         entries.add(new Entry(faceBlock, entry.distance + 1));
                     }
-                } else if (faceBlock.getId() == BlockID.AIR) {
+                } else if (faceBlock.getId() == AIR) {
                     if (entry.distance < 6) {
                         entries.add(new Entry(faceBlock, entry.distance + 1));
                     }

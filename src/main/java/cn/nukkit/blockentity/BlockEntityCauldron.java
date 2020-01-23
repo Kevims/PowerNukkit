@@ -1,9 +1,9 @@
 package cn.nukkit.blockentity;
 
 import cn.nukkit.Player;
-import cn.nukkit.block.Block;
+import cn.nukkit.block.BlockIds;
 import cn.nukkit.level.GlobalBlockPalette;
-import cn.nukkit.level.format.FullChunk;
+import cn.nukkit.level.chunk.Chunk;
 import cn.nukkit.nbt.tag.CompoundTag;
 
 import cn.nukkit.network.protocol.UpdateBlockPacket;
@@ -21,7 +21,7 @@ public class BlockEntityCauldron extends BlockEntitySpawnable {
     public static final int POTION_TYPE_LINGERING = 2;
     public static final int POTION_TYPE_LAVA = 0xF19B;
 
-    public BlockEntityCauldron(FullChunk chunk, CompoundTag nbt) {
+    public BlockEntityCauldron(Chunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
     }
 

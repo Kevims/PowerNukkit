@@ -1,31 +1,28 @@
 package cn.nukkit.item;
 
 import cn.nukkit.block.Block;
-import cn.nukkit.math.BlockFace;
+import cn.nukkit.block.BlockFire;
+import cn.nukkit.block.BlockSolid;
+import cn.nukkit.event.block.BlockIgniteEvent;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.Sound;
-import cn.nukkit.Player;
-import cn.nukkit.block.BlockSolid;
-import cn.nukkit.block.BlockSolidMeta;
+import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.player.Player;
+import cn.nukkit.utils.Identifier;
+
 import java.util.concurrent.ThreadLocalRandom;
-import cn.nukkit.event.block.BlockIgniteEvent;
-import cn.nukkit.block.BlockFire;
+
+import static cn.nukkit.block.BlockIds.AIR;
+import static cn.nukkit.block.BlockIds.FIRE;
 
 /**
  * Created by PetteriM1
  */
 public class ItemFireCharge extends Item {
 
-    public ItemFireCharge() {
-        this(0, 1);
-    }
-
-    public ItemFireCharge(Integer meta) {
-        this(meta, 1);
-    }
-
-    public ItemFireCharge(Integer meta, int count) {
-        super(FIRE_CHARGE, 0, count, "Fire Charge");
+    public ItemFireCharge(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -34,9 +31,9 @@ public class ItemFireCharge extends Item {
     }
 
     @Override
-    public boolean onActivate(Level level, Player player, Block block, Block target, BlockFace face, double fx, double fy, double fz) {
-        if (block.getId() == AIR && (target instanceof BlockSolid || target instanceof BlockSolidMeta)) {
-            BlockFire fire = new BlockFire();
+    public boolean onActivate(Level level, Player player, Block block, Block target, BlockFace face, Vector3f clickPos) {
+        if (block.getId() == AIR && (target instanceof BlockSolid)) {
+            BlockFire fire = (BlockFire) Block.get(FIRE);
             fire.x = block.x;
             fire.y = block.y;
             fire.z = block.z;
@@ -48,7 +45,7 @@ public class ItemFireCharge extends Item {
 
                 if (!e.isCancelled()) {
                     level.setBlock(fire, fire, true);
-                    level.addSound(block, Sound.MOB_GHAST_FIREBALL);
+                    level.addSound(block.asVector3f(), Sound.MOB_GHAST_FIREBALL);
                     level.scheduleUpdate(fire, fire.tickRate() + ThreadLocalRandom.current().nextInt(10));
                 }
                 if (player.isSurvival()) {

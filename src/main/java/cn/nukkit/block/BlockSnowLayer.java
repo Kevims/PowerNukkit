@@ -1,14 +1,18 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.event.block.BlockFadeEvent;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemSnowball;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.level.Level;
 import cn.nukkit.math.AxisAlignedBB;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.AIR;
+import static cn.nukkit.item.ItemIds.SNOWBALL;
 
 /**
  * Created on 2015/12/6 by xtypr.
@@ -16,34 +20,8 @@ import cn.nukkit.utils.BlockColor;
  */
 public class BlockSnowLayer extends BlockFallable {
 
-    private int meta;
-
-    public BlockSnowLayer() {
-        this(0);
-    }
-
-    public BlockSnowLayer(int meta) {
-        this.meta = meta;
-    }
-
-    @Override
-    public final int getDamage() {
-        return this.meta;
-    }
-
-    @Override
-    public final void setDamage(int meta) {
-        this.meta = meta;
-    }
-
-    @Override
-    public String getName() {
-        return "Snow Layer";
-    }
-
-    @Override
-    public int getId() {
-        return SNOW_LAYER;
+    public BlockSnowLayer(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -67,7 +45,7 @@ public class BlockSnowLayer extends BlockFallable {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         Block down = this.down();
         if (down.isSolid()) {
             this.getLevel().setBlock(block, this, true);
@@ -95,7 +73,7 @@ public class BlockSnowLayer extends BlockFallable {
 
     @Override
     public Item toItem() {
-        return new ItemSnowball();
+        return Item.get(SNOWBALL);
     }
 
     @Override
@@ -125,7 +103,7 @@ public class BlockSnowLayer extends BlockFallable {
     }
 
     @Override
-    public boolean canBeFlowedInto() {
+    public boolean canBeFlooded() {
         return true;
     }
 

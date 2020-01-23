@@ -1,28 +1,20 @@
 package cn.nukkit.block;
 
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 /**
  * Created by Pub4Game on 21.02.2016.
  */
 public class BlockSlime extends BlockSolid {
 
-    public BlockSlime() {
+    public BlockSlime(Identifier id) {
+        super(id);
     }
 
     @Override
     public double getHardness() {
         return 0;
-    }
-
-    @Override
-    public String getName() {
-        return "Slime Block";
-    }
-
-    @Override
-    public int getId() {
-        return SLIME_BLOCK;
     }
 
     @Override

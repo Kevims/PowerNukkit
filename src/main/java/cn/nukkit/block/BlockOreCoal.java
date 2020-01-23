@@ -1,11 +1,12 @@
 package cn.nukkit.block;
 
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemCoal;
+import cn.nukkit.item.ItemIds;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.item.enchantment.Enchantment;
 import cn.nukkit.math.NukkitRandom;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -15,12 +16,8 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class BlockOreCoal extends BlockSolid {
 
-    public BlockOreCoal() {
-    }
-
-    @Override
-    public int getId() {
-        return COAL_ORE;
+    public BlockOreCoal(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -39,11 +36,6 @@ public class BlockOreCoal extends BlockSolid {
     }
 
     @Override
-    public String getName() {
-        return "Coal Ore";
-    }
-
-    @Override
     public Item[] getDrops(Item item) {
         if (item.isPickaxe() && item.getTier() >= ItemTool.TIER_WOODEN) {
             int count = 1;
@@ -59,7 +51,7 @@ public class BlockOreCoal extends BlockSolid {
             }
 
             return new Item[]{
-                    new ItemCoal(0, count)
+                    Item.get(ItemIds.COAL, 0, count)
             };
         } else {
             return new Item[0];

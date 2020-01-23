@@ -1,26 +1,27 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.blockentity.BlockEntity;
 import cn.nukkit.blockentity.BlockEntityFlowerPot;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemFlowerPot;
+import cn.nukkit.item.ItemIds;
 import cn.nukkit.math.AxisAlignedBB;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.Tag;
+import cn.nukkit.player.Player;
+import cn.nukkit.registry.BlockRegistry;
+import cn.nukkit.utils.Identifier;
+
+import static cn.nukkit.block.BlockIds.*;
 
 /**
  * @author Nukkit Project Team
  */
-public class BlockFlowerPot extends BlockFlowable {
+public class BlockFlowerPot extends FloodableBlock {
 
-    public BlockFlowerPot() {
-        this(0);
-    }
-
-    public BlockFlowerPot(int meta) {
-        super(meta);
+    public BlockFlowerPot(Identifier id) {
+        super(id);
     }
 
     protected static boolean canPlaceIntoFlowerPot(int id) {
@@ -50,16 +51,6 @@ public class BlockFlowerPot extends BlockFlowable {
     }
 
     @Override
-    public String getName() {
-        return "Flower Pot";
-    }
-
-    @Override
-    public int getId() {
-        return FLOWER_POT_BLOCK;
-    }
-
-    @Override
     public double getHardness() {
         return 0;
     }
@@ -70,7 +61,7 @@ public class BlockFlowerPot extends BlockFlowable {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         if (face != BlockFace.UP) return false;
         CompoundTag nbt = new CompoundTag()
                 .putString("id", BlockEntity.FLOWER_POT)
@@ -84,7 +75,7 @@ public class BlockFlowerPot extends BlockFlowable {
                 nbt.put(aTag.getName(), aTag);
             }
         }
-        BlockEntityFlowerPot flowerPot = (BlockEntityFlowerPot) BlockEntity.createBlockEntity(BlockEntity.FLOWER_POT, getLevel().getChunk((int) block.x >> 4, (int) block.z >> 4), nbt);
+        BlockEntityFlowerPot flowerPot = (BlockEntityFlowerPot) BlockEntity.createBlockEntity(BlockEntity.FLOWER_POT, getLevel().getChunk(block.getChunkX(), block.getChunkZ()), nbt);
         if (flowerPot == null) return false;
 
         this.getLevel().setBlock(block, this, true, true);
@@ -106,19 +97,19 @@ public class BlockFlowerPot extends BlockFlowable {
         BlockEntity blockEntity = getLevel().getBlockEntity(this);
         if (!(blockEntity instanceof BlockEntityFlowerPot)) return false;
         if (blockEntity.namedTag.getShort("item") != 0 || blockEntity.namedTag.getInt("mData") != 0) return false;
-        int blockId;
+        Identifier itemType;
         int itemMeta;
         if (!canPlaceIntoFlowerPot(item.getId())) {
             if (!canPlaceIntoFlowerPot(item.getBlock().getId())) {
                 return true;
             }
-            blockId = item.getBlock().getId();
+            itemType = item.getBlock().getId();
             itemMeta = item.getDamage();
         } else {
-            blockId = item.getId();
+            itemType = item.getId();
             itemMeta = item.getDamage();
         }
-        blockEntity.namedTag.putShort("item", blockId);
+        blockEntity.namedTag.putShort("item", BlockRegistry.get().getLegacyId(itemType));
         blockEntity.namedTag.putInt("data", itemMeta);
 
         this.setDamage(1);
@@ -127,7 +118,7 @@ public class BlockFlowerPot extends BlockFlowable {
 
         if (player.isSurvival()) {
             item.setCount(item.getCount() - 1);
-            player.getInventory().setItemInHand(item.getCount() > 0 ? item : Item.get(Item.AIR));
+            player.getInventory().setItemInHand(item.getCount() > 0 ? item : Item.get(AIR));
         }
         return true;
     }
@@ -146,12 +137,12 @@ public class BlockFlowerPot extends BlockFlowable {
 
         if (dropInside) {
             return new Item[]{
-                    new ItemFlowerPot(),
+                    Item.get(ItemIds.FLOWER_POT),
                     Block.get(insideID, insideMeta).toItem()
             };
         } else {
             return new Item[]{
-                    new ItemFlowerPot()
+                    Item.get(ItemIds.FLOWER_POT)
             };
         }
     }
@@ -193,6 +184,6 @@ public class BlockFlowerPot extends BlockFlowable {
 
     @Override
     public Item toItem() {
-        return new ItemFlowerPot();
+        return Item.get(ItemIds.FLOWER_POT);
     }
 }

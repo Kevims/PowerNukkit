@@ -1,8 +1,9 @@
 package cn.nukkit.network.protocol;
 
-import cn.nukkit.entity.data.EntityMetadata;
+import cn.nukkit.entity.data.EntityDataMap;
 import cn.nukkit.item.Item;
 import cn.nukkit.utils.Binary;
+import io.netty.buffer.ByteBuf;
 import lombok.ToString;
 
 /**
@@ -11,10 +12,10 @@ import lombok.ToString;
  */
 @ToString
 public class AddItemEntityPacket extends DataPacket {
-    public static final byte NETWORK_ID = ProtocolInfo.ADD_ITEM_ENTITY_PACKET;
+    public static final short NETWORK_ID = ProtocolInfo.ADD_ITEM_ENTITY_PACKET;
 
     @Override
-    public byte pid() {
+    public short pid() {
         return NETWORK_ID;
     }
 
@@ -27,23 +28,22 @@ public class AddItemEntityPacket extends DataPacket {
     public float speedX;
     public float speedY;
     public float speedZ;
-    public EntityMetadata metadata = new EntityMetadata();
+    public EntityDataMap dataMap = new EntityDataMap();
     public boolean isFromFishing = false;
 
     @Override
-    public void decode() {
+    protected void decode(ByteBuf buffer) {
 
     }
 
     @Override
-    public void encode() {
-        this.reset();
-        this.putEntityUniqueId(this.entityUniqueId);
-        this.putEntityRuntimeId(this.entityRuntimeId);
-        this.putSlot(this.item);
-        this.putVector3f(this.x, this.y, this.z);
-        this.putVector3f(this.speedX, this.speedY, this.speedZ);
-        this.put(Binary.writeMetadata(metadata));
-        this.putBoolean(this.isFromFishing);
+    protected void encode(ByteBuf buffer) {
+        Binary.writeEntityUniqueId(buffer, this.entityUniqueId);
+        Binary.writeEntityRuntimeId(buffer, this.entityRuntimeId);
+        Binary.writeItem(buffer, this.item);
+        Binary.writeVector3f(buffer, this.x, this.y, this.z);
+        Binary.writeVector3f(buffer, this.speedX, this.speedY, this.speedZ);
+        Binary.writeEntityData(buffer, dataMap);
+        buffer.writeBoolean(this.isFromFishing);
     }
 }

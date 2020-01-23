@@ -1,7 +1,7 @@
 package cn.nukkit.blockentity;
 
-import cn.nukkit.block.Block;
-import cn.nukkit.level.format.FullChunk;
+import cn.nukkit.block.BlockIds;
+import cn.nukkit.level.chunk.Chunk;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.ListTag;
 import cn.nukkit.utils.BannerPattern;
@@ -11,7 +11,7 @@ public class BlockEntityBanner extends BlockEntitySpawnable {
 
     public int color;
 
-    public BlockEntityBanner(FullChunk chunk, CompoundTag nbt) {
+    public BlockEntityBanner(Chunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
     }
 
@@ -28,7 +28,7 @@ public class BlockEntityBanner extends BlockEntitySpawnable {
 
     @Override
     public boolean isBlockEntityValid() {
-        return this.getBlock().getId() == Block.WALL_BANNER || this.getBlock().getId() == Block.STANDING_BANNER;
+        return this.getBlock().getId() == BlockIds.WALL_BANNER || this.getBlock().getId() == BlockIds.STANDING_BANNER;
     }
 
     @Override
@@ -72,7 +72,7 @@ public class BlockEntityBanner extends BlockEntitySpawnable {
 
     public void removePattern(int index) {
         ListTag<CompoundTag> patterns = this.namedTag.getList("Patterns", CompoundTag.class);
-        if(patterns.size() > index && index >= 0) {
+        if (patterns.size() > index && index >= 0) {
             patterns.remove(index);
         }
     }

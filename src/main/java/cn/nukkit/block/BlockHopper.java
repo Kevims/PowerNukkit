@@ -1,39 +1,27 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.blockentity.BlockEntity;
 import cn.nukkit.blockentity.BlockEntityHopper;
 import cn.nukkit.inventory.ContainerInventory;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemHopper;
+import cn.nukkit.item.ItemIds;
 import cn.nukkit.item.ItemTool;
 import cn.nukkit.level.Level;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.nbt.tag.ListTag;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.Faceable;
+import cn.nukkit.utils.Identifier;
 
 /**
  * @author CreeperFace
  */
-public class BlockHopper extends BlockTransparentMeta implements Faceable {
+public class BlockHopper extends BlockTransparent implements Faceable {
 
-    public BlockHopper() {
-        this(0);
-    }
-
-    public BlockHopper(int meta) {
-        super(meta);
-    }
-
-    @Override
-    public int getId() {
-        return HOPPER_BLOCK;
-    }
-
-    @Override
-    public String getName() {
-        return "Hopper Block";
+    public BlockHopper(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -52,7 +40,7 @@ public class BlockHopper extends BlockTransparentMeta implements Faceable {
     }
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         BlockFace facing = face.getOpposite();
 
         if (facing == BlockFace.UP) {
@@ -61,7 +49,7 @@ public class BlockHopper extends BlockTransparentMeta implements Faceable {
 
         this.setDamage(facing.getIndex());
 
-        boolean powered = this.level.isBlockPowered(this.getLocation());
+        boolean powered = this.level.isBlockPowered(this.asVector3i());
 
         if (powered == this.isEnabled()) {
             this.setEnabled(!powered);
@@ -76,7 +64,7 @@ public class BlockHopper extends BlockTransparentMeta implements Faceable {
                 .putInt("y", (int) this.y)
                 .putInt("z", (int) this.z);
 
-        BlockEntityHopper hopper = (BlockEntityHopper) BlockEntity.createBlockEntity(BlockEntity.HOPPER, this.level.getChunk(this.getFloorX() >> 4, this.getFloorZ() >> 4), nbt);
+        BlockEntityHopper hopper = (BlockEntityHopper) BlockEntity.createBlockEntity(BlockEntity.HOPPER, this.level.getChunk(this.getChunkX(), this.getChunkZ()), nbt);
         return hopper != null;
     }
 
@@ -128,7 +116,7 @@ public class BlockHopper extends BlockTransparentMeta implements Faceable {
     @Override
     public int onUpdate(int type) {
         if (type == Level.BLOCK_UPDATE_NORMAL) {
-            boolean powered = this.level.isBlockPowered(this.getLocation());
+            boolean powered = this.level.isBlockPowered(this.asVector3i());
 
             if (powered == this.isEnabled()) {
                 this.setEnabled(!powered);
@@ -157,7 +145,7 @@ public class BlockHopper extends BlockTransparentMeta implements Faceable {
 
     @Override
     public Item toItem() {
-        return new ItemHopper();
+        return Item.get(ItemIds.HOPPER);
     }
 
     @Override

@@ -1,26 +1,27 @@
 package cn.nukkit.blockentity;
 
-import cn.nukkit.block.Block;
-import cn.nukkit.block.BlockAir;
+import cn.nukkit.block.BlockIds;
 import cn.nukkit.item.Item;
-import cn.nukkit.item.ItemBlock;
-import cn.nukkit.level.format.FullChunk;
+import cn.nukkit.level.chunk.Chunk;
 import cn.nukkit.nbt.NBTIO;
 import cn.nukkit.nbt.tag.CompoundTag;
+import cn.nukkit.registry.ItemRegistry;
+
+import static cn.nukkit.block.BlockIds.AIR;
 
 /**
  * Created by Pub4Game on 03.07.2016.
  */
 public class BlockEntityItemFrame extends BlockEntitySpawnable {
 
-    public BlockEntityItemFrame(FullChunk chunk, CompoundTag nbt) {
+    public BlockEntityItemFrame(Chunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
     }
 
     @Override
     protected void initBlockEntity() {
         if (!namedTag.contains("Item")) {
-            namedTag.putCompound("Item", NBTIO.putItemHelper(new ItemBlock(new BlockAir())));
+            namedTag.putCompound("Item", NBTIO.putItemHelper(Item.get(AIR, 0, 0)));
         }
         if (!namedTag.contains("ItemRotation")) {
             namedTag.putByte("ItemRotation", 0);
@@ -41,7 +42,7 @@ public class BlockEntityItemFrame extends BlockEntitySpawnable {
 
     @Override
     public boolean isBlockEntityValid() {
-        return this.getBlock().getId() == Block.ITEM_FRAME_BLOCK;
+        return this.getBlock().getId() == BlockIds.FRAME;
     }
 
     public int getItemRotation() {
@@ -88,7 +89,7 @@ public class BlockEntityItemFrame extends BlockEntitySpawnable {
     @Override
     public CompoundTag getSpawnCompound() {
         if (!this.namedTag.contains("Item")) {
-            this.setItem(new ItemBlock(new BlockAir()), false);
+            this.setItem(Item.get(AIR, 0, 0), false);
         }
         CompoundTag item = namedTag.getCompound("Item").copy();
         item.setName("Item");
@@ -98,7 +99,7 @@ public class BlockEntityItemFrame extends BlockEntitySpawnable {
                 .putInt("y", (int) this.y)
                 .putInt("z", (int) this.z);
 
-        if (item.getShort("id") != Item.AIR) {
+        if (ItemRegistry.get().getIdentifier(item.getShort("id")) != AIR) {
             tag.putCompound("Item", item)
                     .putByte("ItemRotation", this.getItemRotation());
         }
@@ -106,6 +107,6 @@ public class BlockEntityItemFrame extends BlockEntitySpawnable {
     }
 
     public int getAnalogOutput() {
-        return this.getItem() == null || this.getItem().getId() == 0 ? 0 : this.getItemRotation() % 8 + 1;
+        return this.getItem() == null || this.getItem().getId() == AIR ? 0 : this.getItemRotation() % 8 + 1;
     }
 }

@@ -1,6 +1,5 @@
 package cn.nukkit.command.defaults;
 
-import cn.nukkit.Player;
 import cn.nukkit.block.Block;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.command.data.CommandParamType;
@@ -9,10 +8,14 @@ import cn.nukkit.item.Item;
 import cn.nukkit.lang.TranslationContainer;
 import cn.nukkit.level.Position;
 import cn.nukkit.level.particle.*;
-import cn.nukkit.math.Vector3;
-import cn.nukkit.utils.TextFormat;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.player.Player;
+import cn.nukkit.utils.Identifier;
 
 import java.util.Random;
+
+import static cn.nukkit.item.ItemIds.SLIME_BALL;
+import static cn.nukkit.item.ItemIds.SNOWBALL;
 
 /**
  * Created on 2015/11/12 by xtypr.
@@ -93,7 +96,7 @@ public class ParticleCommand extends VanillaCommand {
         Particle particle = this.getParticle(name, position, data);
 
         if (particle == null) {
-            position.level.addParticleEffect(position.asVector3f(), args[0], -1, position.level.getDimension());
+            position.level.addParticleEffect(position.asVector3f(), Identifier.fromString(args[0]), -1, position.level.getDimension());
             return true;
         }
 
@@ -113,7 +116,7 @@ public class ParticleCommand extends VanillaCommand {
         return true;
     }
 
-    private Particle getParticle(String name, Vector3 pos, int data) {
+    private Particle getParticle(String name, Vector3f pos, int data) {
         switch (name) {
             case "explode":
                 return new ExplodeParticle(pos);
@@ -152,9 +155,9 @@ public class ParticleCommand extends VanillaCommand {
             case "reddust":
                 return new RedstoneParticle(pos, data != -1 ? data : 1);
             case "snowballpoof":
-                return new ItemBreakParticle(pos, Item.get(Item.SNOWBALL));
+                return new ItemBreakParticle(pos, Item.get(SNOWBALL));
             case "slime":
-                return new ItemBreakParticle(pos, Item.get(Item.SLIMEBALL));
+                return new ItemBreakParticle(pos, Item.get(SLIME_BALL));
             case "itembreak":
                 if (data != -1 && data != 0) {
                     return new ItemBreakParticle(pos, Item.get(data));

@@ -1,24 +1,29 @@
 package cn.nukkit.block;
 
-import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.event.block.BlockGrowEvent;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.particle.BoneMealParticle;
 import cn.nukkit.math.BlockFace;
+import cn.nukkit.math.Vector3f;
+import cn.nukkit.player.Player;
 import cn.nukkit.utils.BlockColor;
+import cn.nukkit.utils.Identifier;
 
 import java.util.concurrent.ThreadLocalRandom;
+
+import static cn.nukkit.block.BlockIds.FARMLAND;
+import static cn.nukkit.item.ItemIds.DYE;
 
 /**
  * author: MagicDroidX
  * Nukkit Project
  */
-public abstract class BlockCrops extends BlockFlowable {
+public abstract class BlockCrops extends FloodableBlock {
 
-    protected BlockCrops(int meta) {
-        super(meta);
+    protected BlockCrops(Identifier id) {
+        super(id);
     }
 
     @Override
@@ -28,7 +33,7 @@ public abstract class BlockCrops extends BlockFlowable {
 
 
     @Override
-    public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
+    public boolean place(Item item, Block block, Block target, BlockFace face, Vector3f clickPos, Player player) {
         if (block.down().getId() == FARMLAND) {
             this.getLevel().setBlock(block, this, true, true);
             return true;
@@ -39,7 +44,7 @@ public abstract class BlockCrops extends BlockFlowable {
     @Override
     public boolean onActivate(Item item, Player player) {
         //Bone meal
-        if (item.getId() == Item.DYE && item.getDamage() == 0x0f) {
+        if (item.getId() == DYE && item.getDamage() == 0x0f) {
             if (this.getDamage() < 7) {
                 BlockCrops block = (BlockCrops) this.clone();
                 block.setDamage(block.getDamage() + ThreadLocalRandom.current().nextInt(3) + 2);
@@ -57,7 +62,7 @@ public abstract class BlockCrops extends BlockFlowable {
                 this.level.addParticle(new BoneMealParticle(this));
 
                 if (player != null && (player.gamemode & 0x01) == 0) {
-                    item.count--;
+                    item.decrementCount();
                 }
             }
 
