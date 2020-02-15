@@ -61,7 +61,8 @@ public class BlockLight extends BlockTransparent {
     }
 
     @Override
-    public Item[] getDrops(Item item) {
-        return new Item[0];
+    public Item toItem() {
+        return null;
     }
+
 }
