@@ -15,7 +15,7 @@ pipeline {
             post {
                 success {
                     junit 'target/surefire-reports/**/*.xml'
-                    archiveArtifacts artifacts: 'target/Nukkit.jar', fingerprint: true
+                    archiveArtifacts artifacts: 'target/powernukkit-*.jar', fingerprint: true
                 }
             }
         }
@@ -24,7 +24,7 @@ pipeline {
             when {
                 anyOf {
                     branch 'master';
-                    branch '2.0'
+                    branch '2.0-migration'
                 }
             }
             steps {

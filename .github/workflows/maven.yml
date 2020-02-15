@@ -1,6 +1,6 @@
-name: Java CI
+name: PowerNukkit v2.X
 
-on: [pull_request]
+on: [push,pull_request]
 
 jobs:
   build:
@@ -27,5 +27,5 @@ jobs:
         uses: actions/upload-artifact@v1
         if: success()
         with:
-          name: Nukkit
-          path: target/Nukkit.jar
+          name: PowerNukkit
+          path: target/PowerNukkit.jar

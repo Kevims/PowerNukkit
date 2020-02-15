@@ -2,10 +2,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <name>Nukkit</name>
-    <groupId>cn.nukkit</groupId>
-    <artifactId>nukkit</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <name>PowerNukkit</name>
+    <groupId>br.com.gamemods</groupId>
+    <artifactId>powernukkit</artifactId>
+    <!--
+    Version Convention: upstream.major.minor.patch-PN
+    Based on https://semver.org/ but with upstream on front
+    Upstream is the NukkitX major version
+    PN is a indicator that software is running PowerNukkit, it must be present both in releases and snapshot versions
+    -->
+    <version>2.0.0.0-PN-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
