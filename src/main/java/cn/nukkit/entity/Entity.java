@@ -1613,15 +1613,14 @@ public abstract class Entity extends Location implements Metadatable {
     }
 
     public void fall(float fallDistance) {
-        float damage;
         if (this.hasEffect(Effect.SLOW_FALLING)) {
-            damage = 0;
+            return;
         }
-        else {
-            damage = (float) Math.floor(fallDistance - 3 - (this.hasEffect(Effect.JUMP) ? this.getEffect(Effect.JUMP).getAmplifier() + 1 : 0));
-        }
+
         Location floorLocation = this.floor();
         Block down = this.level.getBlock(floorLocation.down());
+
+        float damage = (float) Math.floor(fallDistance - 3 - (this.hasEffect(Effect.JUMP) ? this.getEffect(Effect.JUMP).getAmplifier() + 1 : 0));
         if (damage > 0) {
             if (down.getId() == BlockID.HONEY_BLOCK) {
                 damage *= 0.2F;
