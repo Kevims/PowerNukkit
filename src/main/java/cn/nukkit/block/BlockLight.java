@@ -64,5 +64,5 @@ public class BlockLight extends BlockTransparent {
     public Item toItem() {
         return null;
     }
-  
+
 }
