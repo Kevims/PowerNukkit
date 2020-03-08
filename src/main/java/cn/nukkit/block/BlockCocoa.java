@@ -50,7 +50,6 @@ public class BlockCocoa extends BlockTransparentMeta implements Faceable {
         super.setDamage(meta);
     }
 
-
     @Override
     public double getMinX() {
         return this.x + getRelativeBoundingBox().getMinX();
@@ -92,11 +91,6 @@ public class BlockCocoa extends BlockTransparentMeta implements Faceable {
         AxisAlignedBB[] bbs;
 
         switch (getDamage()) {
-            case 0:
-            case 4:
-            case 8:
-                bbs = NORTH;
-                break;
             case 1:
             case 5:
             case 9:
@@ -156,15 +150,8 @@ public class BlockCocoa extends BlockTransparentMeta implements Faceable {
             }
         } else if (type == Level.BLOCK_UPDATE_RANDOM) {
             if (ThreadLocalRandom.current().nextInt(2) == 1) {
-                if (this.getDamage() / 4 < 2) {
-                    BlockCocoa block = (BlockCocoa) this.clone();
-                    block.setDamage(block.getDamage() + 4);
-                    BlockGrowEvent ev = new BlockGrowEvent(this, block);
-                    Server.getInstance().getPluginManager().callEvent(ev);
-
-                    if (!ev.isCancelled()) {
-                        this.getLevel().setBlock(this, ev.getNewState(), true, true);
-                    } else {
+                if (this.getGrowthStage() < 2) {
+                    if (this.grow()) {
                         return Level.BLOCK_UPDATE_RANDOM;
                     }
                 }
@@ -184,16 +171,11 @@ public class BlockCocoa extends BlockTransparentMeta implements Faceable {
     @Override
     public boolean onActivate(Item item, Player player) {
         if (item.getId() == Item.DYE && item.getDamage() == 0x0f) {
-            Block block = this.clone();
-            if (this.getDamage() / 4 < 2) {
-                block.setDamage(block.getDamage() + 4);
-                BlockGrowEvent ev = new BlockGrowEvent(this, block);
-                Server.getInstance().getPluginManager().callEvent(ev);
-
-                if (ev.isCancelled()) {
+            if (this.getGrowthStage() < 2) {
+                if (this.grow()) {
                     return false;
                 }
-                this.getLevel().setBlock(this, ev.getNewState(), true, true);
+
                 this.level.addParticle(new BoneMealParticle(this));
 
                 if (player != null && (player.gamemode & 0x01) == 0) {
@@ -205,6 +187,23 @@ public class BlockCocoa extends BlockTransparentMeta implements Faceable {
         }
 
         return false;
+    }
+
+    public int getGrowthStage() {
+        return this.getDamage() / 4;
+    }
+
+    private boolean grow() {
+        Block block = this.clone();
+        block.setDamage(block.getDamage() + 4);
+        BlockGrowEvent ev = new BlockGrowEvent(this, block);
+        Server.getInstance().getPluginManager().callEvent(ev);
+
+        if (ev.isCancelled()) {
+            return true;
+        }
+
+        return !this.getLevel().setBlock(this, ev.getNewState(), true, true);
     }
 
     @Override
@@ -239,15 +238,9 @@ public class BlockCocoa extends BlockTransparentMeta implements Faceable {
 
     @Override
     public Item[] getDrops(Item item) {
-        if (this.getDamage() >= 8) {
-            return new Item[]{
-                    new ItemDye(3, 3)
-            };
-        } else {
-            return new Item[]{
-                    new ItemDye(3, 1)
-            };
-        }
+        return new Item[]{
+                new ItemDye(3, this.getDamage() >= 8 ? 3 : 1)
+        };
     }
 
     @Override
@@ -264,4 +257,5 @@ public class BlockCocoa extends BlockTransparentMeta implements Faceable {
     public boolean sticksToPiston() {
         return false;
     }
+
 }

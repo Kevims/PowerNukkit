@@ -69,15 +69,9 @@ public class BlockLantern extends BlockFlowable {
             return false;
         }
 
-        boolean hanging = false;
-        if (face == BlockFace.DOWN) {
-            if (isBlockAboveValid()) {
-                hanging = true;
-            } else if (!isBlockUnderValid()) {
-                return false;
-            }
-        } else if (isBlockAboveValid()) {
-            hanging = true;
+        boolean hanging = face != BlockFace.UP && isBlockAboveValid() && (!isBlockUnderValid() || face == BlockFace.DOWN);
+        if (!isBlockUnderValid() && !hanging) {
+            return false;
         }
 
         if (hanging) {
