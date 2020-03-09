@@ -1439,7 +1439,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
             return;
         }
         Vector3 newPos = this.newPosition;
-        double distanceSquared = newPos.distanceSquared(this);
+        double distanceSquared = newPos.distance(this);
         boolean revert = false;
         if ((distanceSquared / ((double) (tickDiff * tickDiff))) > 100 && (newPos.y - this.y) > -5) {
             revert = true;
@@ -1615,7 +1615,6 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
         }
 
         if (revert) {
-
             this.lastX = from.x;
             this.lastY = from.y;
             this.lastZ = from.z;
@@ -2355,7 +2354,7 @@ public class Player extends EntityHuman implements CommandSender, InventoryHolde
                         break;
                     }
 
-                    if (newPos.distanceSquared(this) > 100) {
+                    if (newPos.distance(this) > 100) {
                         this.sendPosition(this, movePlayerPacket.yaw, movePlayerPacket.pitch, MovePlayerPacket.MODE_RESET);
                         break;
                     }

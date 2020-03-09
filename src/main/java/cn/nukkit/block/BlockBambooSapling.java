@@ -74,10 +74,6 @@ public class BlockBambooSapling extends BlockFlowable {
             return false;
         }
 
-        if(this.getLevelBlock() instanceof BlockLiquid || this.getLevelBlockAtLayer(1) instanceof BlockLiquid) {
-            return false;
-        }
-
         this.level.setBlock(this, this, true, true);
         return true;
     }

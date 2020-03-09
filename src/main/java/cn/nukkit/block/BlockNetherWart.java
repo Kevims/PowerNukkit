@@ -27,7 +27,7 @@ public class BlockNetherWart extends BlockFlowable {
     @Override
     public boolean place(Item item, Block block, Block target, BlockFace face, double fx, double fy, double fz, Player player) {
         Block down = this.down();
-        if (down.getId() == SOUL_SAND) {
+        if (down.getId() == SOUL_SAND && this.getLevelBlock().getId() == Block.AIR) {
             this.getLevel().setBlock(block, this, true, true);
             return true;
         }
