@@ -116,14 +116,11 @@ public class BlockEndPortalFrame extends BlockTransparentMeta implements Faceabl
 
             for(int x = -1; x <= 1; x++) {
                 for(int z = -1; z <= 1; z++) {
-                    if(this.getLevel().getBlock(centerSpot.add(x, 0, z)).getId() != 0)
-                        return;
-                }
-            }
-
-            for(int x = -1; x <= 1; x++) {
-                for(int z = -1; z <= 1; z++) {
-                    this.getLevel().setBlock(centerSpot.add(x, 0, z), Block.get(Block.END_PORTAL));
+                    Vector3 vector3 = centerSpot.add(x, 0, z);
+                    if(this.getLevel().getBlock(vector3).getId() != Block.AIR) {
+                        this.getLevel().useBreakOn(vector3);
+                    }
+                    this.getLevel().setBlock(vector3, Block.get(Block.END_PORTAL));
                 }
             }
         }
@@ -174,7 +171,7 @@ public class BlockEndPortalFrame extends BlockTransparentMeta implements Faceabl
     }
 
     private boolean checkFrame(Block block, int x, int z) {
-        return block.getId() == this.getId() && block.getDamage() == (x == -2 ? 3 : x == 2 ? 1 : z == -2 ? 0 : z == 2 ? 2 : 4);
+        return block.getId() == this.getId() && (block.getDamage() - 4) == (x == -2 ? 3 : x == 2 ? 1 : z == -2 ? 0 : z == 2 ? 2 : -1);
     }
 
     @Override
