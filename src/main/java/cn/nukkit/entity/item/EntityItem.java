@@ -307,6 +307,11 @@ public class EntityItem extends Entity {
     }
 
     @Override
+    public void addMovement(double x, double y, double z, double yaw, double pitch, double headYaw) {
+
+    }
+
+    @Override
     public boolean doesTriggerPressurePlate() {
         return true;
     }
