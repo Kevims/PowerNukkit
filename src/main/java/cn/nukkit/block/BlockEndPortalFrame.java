@@ -107,7 +107,7 @@ public class BlockEndPortalFrame extends BlockTransparentMeta implements Faceabl
                     if((x == -2 || x == 2) && (z == -2 || z == 2))
                         continue;
                     if(x == -2 || x == 2 || z == -2 || z == 2) {
-                        if(!this.checkFrame(this.getLevel().getBlock(centerSpot.add(x, 0, z)))) {
+                        if(!this.checkFrame(this.getLevel().getBlock(centerSpot.add(x, 0, z)), x, z)) {
                             return;
                         }
                     }
@@ -171,6 +171,10 @@ public class BlockEndPortalFrame extends BlockTransparentMeta implements Faceabl
 
     private boolean checkFrame(Block block) {
         return block.getId() == this.getId() && (block.getDamage() & 4) == 4;
+    }
+
+    private boolean checkFrame(Block block, int x, int z) {
+        return block.getId() == this.getId() && block.getDamage() == (x == -2 ? 3 : x == 2 ? 1 : z == -2 ? 0 : z == 2 ? 2 : 4);
     }
 
     @Override
